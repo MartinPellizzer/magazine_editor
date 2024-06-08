@@ -17,6 +17,20 @@ window_w = 1280
 window_h = 720
 
 
+row_num = 16
+row_pad_y = page_h*0.1
+row_h = (page_h - row_pad_y*2) / row_num
+
+col_num = 3
+col_pad_x = page_w*0.1
+col_w = (page_w - col_pad_x*2) / col_num
+
+grid = []
+for row_i in range(row_num):
+    row_curr = []
+    for col_i in range(col_num):
+        row_curr.append(0)
+    grid.append(row_curr)
 
 screen = pygame.display.set_mode((window_w, window_h), 0, 32)
 
@@ -42,6 +56,8 @@ while True:
         if event.type == pygame.MOUSEBUTTONDOWN:
             mouse_click_pos = pygame.mouse.get_pos()
             mouse_click_col_i, mouse_click_row_i = cell_from_pos(mouse_click_pos)
+            grid[mouse_click_row_i][mouse_click_col_i] = 1
+            print(grid)
 
     
     # draw window bg
@@ -53,10 +69,6 @@ while True:
     pygame.draw.rect(screen, '#ffffff', (page_x, page_y, page_w, page_h))
 
     # grid rows
-    row_num = 16
-    row_pad_y = page_h*0.1
-    row_h = (page_h - row_pad_y*2) / row_num
-
     for i in range(row_num + 1):
         x_1 = page_x
         y_1 = page_y + row_h * i + row_pad_y
@@ -65,10 +77,6 @@ while True:
         pygame.draw.line(screen, '#ff00ff', (x_1, int(y_1)), (x_2, int(y_2)), 1)
 
     # grid rows
-    col_num = 3
-    col_pad_x = page_w*0.1
-    col_w = (page_w - col_pad_x*2) / col_num
-
     for i in range(col_num + 1):
         x_1 = page_x + col_w * i + col_pad_x
         y_1 = page_y
@@ -106,9 +114,12 @@ while True:
     text_surface = my_font.render(f'{mouse_click_col_i}:{mouse_click_row_i}', False, '#ff00ff')
     screen.blit(text_surface, (0, 90))
 
-    if mouse_click_col_i != 0:
-        red_x_1 = page_x + col_w * mouse_click_col_i + col_pad_x
-        red_y_1 = page_y + row_h * mouse_click_row_i + row_pad_y
-        pygame.draw.rect(screen, '#ff0000', (red_x_1, red_y_1, 10, 10))
+    
+    for row_i in range(row_num):
+        for col_i in range(col_num):
+            if grid[row_i][col_i] == 1:
+                red_x_1 = page_x + col_w * col_i + col_pad_x
+                red_y_1 = page_y + row_h * row_i + row_pad_y
+                pygame.draw.rect(screen, '#ff0000', (red_x_1, red_y_1, 10, 10))
 
     pygame.display.update()
