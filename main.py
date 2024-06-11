@@ -25,6 +25,9 @@ json_filepath = 'database/2024_06/page_0001.json'
 with open(json_filepath, 'r', encoding='utf-8') as f: 
     data = json.load(f)
 
+json_template_filepath = 'templates/2024_06/0001.json'
+with open(json_template_filepath, 'r', encoding='utf-8') as f: 
+    data_template = json.load(f)
 
 def img_resize(img, w, h):
     start_size = img.size
@@ -73,9 +76,15 @@ page_grid_col_w = page_w / page_grid_col_num
 page_grid_row_num = 16 
 page_grid_row_h = page_h / page_grid_row_num
 
-page_guides_col_num = 3 
+# page_guides_col_num = 3 
+# page_guides_col_padding = page_grid_col_w*4
+# page_guides_col_w = (page_w - page_guides_col_padding) / page_guides_col_num
+
+
+page_guides_col_num = data_template['col_num']
 page_guides_col_padding = page_grid_col_w*4
 page_guides_col_w = (page_w - page_guides_col_padding) / page_guides_col_num
+
 
 page_guides_row_num = 12
 page_guides_row_padding = page_grid_row_h*4
@@ -154,10 +163,19 @@ if title_col_i != '' and title_row_i != '':
 body = data['body']
 text = body.replace('\n', ' ')
 
+
+cols_i_list = []
+if page_guides_col_num == 1:
+    cols_i_list = [2]
+elif page_guides_col_num == 2:
+    cols_i_list = [2, 8]
+elif page_guides_col_num == 3:
+    cols_i_list = [2, 6, 10]
+
 blocks_list = []
 block_curr = ['', '', '']
 for col_i in range(a4_grid_col_num):
-    if col_i == 2 or col_i == 6 or col_i == 10:
+    if col_i in cols_i_list:
         for row_i in range(a4_grid_row_num):
             # print(f'{col_i}:{row_i} -> {grid_map[row_i][col_i]}')
             if grid_map[row_i][col_i] == 'b':
