@@ -62,7 +62,6 @@ def unsplash_image_get():
 
 c_grid = '#cdcdcd'
 
-
 body_font_size = 30
 body_font = ImageFont.truetype("assets/fonts/arial/ARIAL.TTF", body_font_size)
 
@@ -148,7 +147,6 @@ page_guides_col_w = (page_w - page_guides_col_padding) / page_guides_col_num
 page_guides_row_num = 12
 page_guides_row_padding = page_grid_row_h*4
 page_guides_row_h = (page_h - page_guides_row_padding) / page_guides_row_num
-
 
 grid_map = []
 for row_i in range(page_grid_row_num):
