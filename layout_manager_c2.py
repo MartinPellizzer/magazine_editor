@@ -49,7 +49,6 @@ guides_row_num = 12
 a4_guides_row_padding = a4_grid_row_h*4
 a4_guides_row_h = (g.A4_HEIGHT - a4_guides_row_padding) / guides_row_num
 
-
 page_grid_col_w = g.PAGE_WIDTH / grid_col_num
 page_grid_row_h = g.PAGE_HEIGHT / grid_row_num
 
@@ -237,8 +236,8 @@ def template_preview():
         a4_draw_grid(draw)
         a4_draw_guides(draw)
 
-    a4_draw_title(draw)
     a4_draw_image(img)
+    a4_draw_title(draw)
 
     blocks_list = a4_body_blocks()
 
