@@ -2,18 +2,18 @@
 import os
 import csv
 import json
+import time
 from PIL import Image, ImageDraw, ImageFont
 
 import g
 import util
+import util_ai
 
 page_x = g.WINDOW_WIDTH//2-g.PAGE_WIDTH//2
 page_y = g.WINDOW_HEIGHT//2-g.PAGE_HEIGHT//2
 
 body_font = ImageFont.truetype("assets/fonts/arial/ARIAL.TTF", g.BODY_FONT_SIZE)
 
-
-# load json data
 
 
 
@@ -151,9 +151,30 @@ for magazine_page_foldername in magazine_pages_foldernames:
     with open(json_filepath, 'r', encoding='utf-8') as f: 
         data = json.load(f)
 
+
     template_url = data['template_url']
     image_url = data['image_url']
-    body = data['body'].replace('\n', ' ')
+
+    study_journal = data['study_journal']
+    study_abstract = data['study_abstract']
+    if 'body':
+        key = 'body'
+        # if key in data: del data[key]
+        if key not in data:
+            prompt = f'''
+                Scrivi in Italiano un articolo di 400 parole per una rivista scientifica di ozono utilizzando i dati del seguente studio: {study_abstract}
+                Inizia la risposta con queste parole: Secondo uno studio scientifico pubblicato dal {study_journal}, 
+            '''
+            reply = util_ai.gen_reply(prompt).strip()
+            if reply != '':
+                print('*********************************************************')
+                print(reply)
+                print('*********************************************************')
+                data[key] = reply
+                util.json_write(json_filepath, data)
+            time.sleep(g.SLEEP_TIME)
+        if key in data:
+            body = data['body'].replace('\n', ' ')
 
     # template
     with open(template_url, 'r', encoding='utf-8') as f: 

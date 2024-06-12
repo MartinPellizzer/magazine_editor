@@ -1,3 +1,5 @@
+SLEEP_TIME = 30
+
 C_GRID = '#cdcdcd'
 
 

@@ -1,5 +1,6 @@
 
 import requests
+import json
 
 
 def unsplash_image_get():
@@ -50,3 +51,19 @@ def img_resize(img, w, h):
     img = img.crop(area)
 
     return img
+
+
+
+def json_write(filepath, data):
+    with open(filepath, 'w', encoding='utf-8') as f:
+        json.dump(data, f)
+
+def file_read(filepath):
+    file_append(filepath, '')
+    with open(filepath, 'r', encoding='utf-8') as f: 
+        text = f.read()
+    return text
+
+def file_append(filepath, text):
+    with open(filepath, 'a', encoding='utf-8') as f: 
+        f.write(text)
