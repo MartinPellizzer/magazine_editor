@@ -65,7 +65,7 @@ def a4_draw_title(draw):
         draw.text((x_1, y_1), title, (0, 0, 0), font=title_font)
 
 
-def a4_draw_title_2(draw):
+def a4_draw_title_constrain(draw):
     title = 'Nature\'s Wonderland'
     title = 'This is a title'
     title = 'How to sanitize poultry\nmeat with ozone'
@@ -154,7 +154,7 @@ def text_to_lines(text):
         if line_curr_w + word_w < a4_guides_col_w - a4_guides_col_gap*2:
             line_curr += f'{word} '
         else:
-            lines.append(line_curr)
+            lines.append(line_curr.strip())
             line_curr = f'{word} '
     lines.append(line_curr)
     return lines
@@ -181,7 +181,45 @@ def draw_body(draw, lines, blocks_list):
                 y_1 = a4_grid_row_h * start_row_i + g.BODY_FONT_SIZE * line_i
             else:
                 break
+                
         draw.text((x_1, y_1), line, (0, 0, 0), font=body_font)
+        line_i += 1
+
+
+def draw_body_justify(draw, lines, blocks_list):
+    block_i = 0
+    start_col_i = blocks_list[block_i][0]
+    start_row_i = blocks_list[block_i][1]
+    end_row_i = blocks_list[block_i][2]
+    line_i = 0
+    lines_num = len(lines)
+    for i, line in enumerate(lines):
+        x_1 = a4_grid_col_w * start_col_i + a4_guides_col_gap * ((start_col_i-2)//4)
+        y_1 = a4_grid_row_h * start_row_i + g.BODY_FONT_SIZE * line_i
+        line_row_i = y_1 // a4_guides_row_h
+        if line_row_i > end_row_i - 1: 
+            block_i += 1
+            if block_i < len(blocks_list):
+                start_col_i = blocks_list[block_i][0]
+                start_row_i = blocks_list[block_i][1]
+                end_row_i = blocks_list[block_i][2]
+                line_i = 0
+                x_1 = a4_grid_col_w * start_col_i + a4_guides_col_gap * ((start_col_i-2)//4)
+                y_1 = a4_grid_row_h * start_row_i + g.BODY_FONT_SIZE * line_i
+            else:
+                break
+
+        if i != lines_num - 1:
+            words = line.split(" ")
+            words_length = sum(draw.textlength(w, font=body_font) for w in words)
+            space_length = ((a4_guides_col_w - a4_guides_col_gap*2) - words_length) / (len(words) - 1)
+            x = x_1
+            for word in words:
+                draw.text((x, y_1), word, font=body_font, fill="black")
+                x += draw.textlength(word, font=body_font) + space_length
+        else:
+            draw.text((x_1, y_1), line, font=body_font, fill="black")
+
         line_i += 1
 
 
@@ -264,14 +302,14 @@ for magazine_page_foldername in magazine_pages_foldernames:
     draw = ImageDraw.Draw(img)
 
     a4_draw_image(img, image_url)
-    a4_draw_title_2(draw)
+    a4_draw_title_constrain(draw)
 
     blocks_list = a4_body_blocks()
 
     if blocks_list != []:
         text = body
         lines = text_to_lines(text)
-        draw_body(draw, lines, blocks_list)
+        draw_body_justify(draw, lines, blocks_list)
 
     export_url = data['export_url']
     img.save(export_url)
