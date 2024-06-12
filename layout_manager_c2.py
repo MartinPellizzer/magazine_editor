@@ -23,7 +23,7 @@ import mag
 
 # FLAGS
 flag_a4_grid = 1
-flag_brush_type = 'b'
+flag_brush_type = 't'
 show_grid = 1
 
 # FONTS
@@ -113,7 +113,7 @@ def a4_draw_guides(draw):
 
 
 def a4_draw_title(draw):
-    title = 'Nature\'s \nWonderland'
+    title = 'Nature\'s Wonderland'
     title_font = ImageFont.truetype("assets/fonts/arial/ARIAL.TTF", g.TITLE_FONT_SIZE)
     title_col_i = ''
     title_row_i = ''
@@ -126,6 +126,57 @@ def a4_draw_title(draw):
     if title_col_i != '' and title_row_i != '':
         x_1 = a4_grid_col_w * title_col_i
         y_1 = a4_grid_row_h * title_row_i
+        draw.text((x_1, y_1), title, (0, 0, 0), font=title_font)
+
+
+def a4_draw_title_2(draw):
+    title = 'Nature\'s Wonderland'
+    title = 'This is a title'
+    title = 'How to sanitize poultry\nmeat with ozone'
+    # title_font = ImageFont.truetype("assets/fonts/arial/ARIAL.TTF", g.TITLE_FONT_SIZE)
+
+    col_i_1 = -1
+    row_i_1 = -1
+    col_i_2 = -1
+    row_i_2 = -1
+    for row_i in range(grid_row_num):
+        for col_i in range(grid_col_num):
+            if grid_map[row_i][col_i] == 't':
+                if col_i_1 == -1 and row_i_1 == -1:
+                    col_i_1 = col_i
+                    row_i_1 = row_i
+                else:
+                    col_i_2 = col_i
+                    row_i_2 = row_i
+
+    # print(col_i_1, row_i_1)
+    # print(col_i_2, row_i_2)
+
+    title_available_w = (col_i_2 - col_i_1 + 1) * a4_grid_col_w
+    title_available_h = (row_i_2 - row_i_1 + 1) * a4_grid_row_h
+    # print(title_available_w)
+
+    lines = title.split('\n')
+    line_longest = ''
+    for line in lines:
+        if len(line_longest) < len(line): line_longest = line
+    
+    title_font_size = 1
+    title_font = ImageFont.truetype("assets/fonts/arial/ARIAL.TTF", title_font_size)
+    for _ in range(999):
+        title_font = ImageFont.truetype("assets/fonts/arial/ARIAL.TTF", title_font_size)
+        _, _, title_curr_w, title_curr_h = title_font.getbbox(line_longest)
+        if title_curr_w > title_available_w or title_curr_h > title_available_h:
+            break
+        else:
+            title_font_size += 1
+
+
+
+
+    if col_i_1 != -1 and row_i_1 != -1 and col_i_2 != -1 and row_i_2 != -1:
+        x_1 = a4_grid_col_w * col_i_1
+        y_1 = a4_grid_row_h * row_i_1
         draw.text((x_1, y_1), title, (0, 0, 0), font=title_font)
 
 
@@ -237,7 +288,7 @@ def template_preview():
         a4_draw_guides(draw)
 
     a4_draw_image(img)
-    a4_draw_title(draw)
+    a4_draw_title_2(draw)
 
     blocks_list = a4_body_blocks()
 
