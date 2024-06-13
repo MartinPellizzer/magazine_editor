@@ -44,6 +44,7 @@ guide_size_3 = 165
 guide_size_2 = 248
 guide_size = guide_size_4
 
+
 grid_col_num = 16 
 a4_grid_col_w = g.A4_WIDTH / grid_col_num
 
@@ -67,6 +68,10 @@ page_guides_col_w = (g.PAGE_WIDTH - page_guides_col_padding) / guides_col_num
 
 page_guides_row_padding = page_grid_row_h*4
 page_guides_row_h = (g.PAGE_HEIGHT - page_guides_row_padding) / guides_row_num
+
+
+grid_col_num = int(g.PAGE_WIDTH / cell_size) + 1
+grid_row_num = int(g.PAGE_HEIGHT / cell_size) + 1
 
 grid_map = []
 for row_i in range(grid_row_num):
@@ -388,43 +393,77 @@ screen = pygame.display.set_mode((g.WINDOW_WIDTH, g.WINDOW_HEIGHT), 0, 32)
 pygame.display.set_caption("Magazine Editor")
 my_font = pygame.font.SysFont('./assets/fonts/arial/ARIAL.TTF', 30)
 
+flag_drag = False
+drag_x_1 = -1
+drag_y_1 = -1
+
+tmp_grid_map = []
+for row_i in range(grid_row_num):
+    row_curr = []
+    for col_i in range(grid_col_num):
+        row_curr.append(grid_map[row_i][col_i])
+    tmp_grid_map.append(row_curr)
 
 while True:
     for event in pygame.event.get():
         if event.type==QUIT:
             exit()
                 
-        if pygame.mouse.get_pressed()[0]:
+        if event.type == pygame.MOUSEBUTTONDOWN:
+            flag_drag = True
             pos = pygame.mouse.get_pos()
-            x = pos[0]
-            y = pos[1]
-            mouse_click_col_i = int((x - page_x) // page_grid_col_w)
-            mouse_click_row_i = int((y - page_y) // page_grid_row_h)
-            if flag_brush_type == 't':
-                if (mouse_click_row_i >= 0 and 
-                    mouse_click_row_i < grid_row_num and 
-                    mouse_click_col_i >= 0 and 
-                    mouse_click_col_i < grid_col_num):
-                    grid_map[mouse_click_row_i][mouse_click_col_i] = 't'
-            if flag_brush_type == 'b':
-                if (mouse_click_row_i >= 0 and 
-                    mouse_click_row_i < grid_row_num and 
-                    mouse_click_col_i >= 0 and 
-                    mouse_click_col_i < grid_col_num):
-                    grid_map[mouse_click_row_i][mouse_click_col_i] = 'b'
-            if flag_brush_type == 'i':
-                if (mouse_click_row_i >= 0 and 
-                    mouse_click_row_i < grid_row_num and 
-                    mouse_click_col_i >= 0 and 
-                    mouse_click_col_i < grid_col_num):
-                    grid_map[mouse_click_row_i][mouse_click_col_i] = 'i'
+            drag_x_1 = pos[0]
+            drag_y_1 = pos[1]
+            print(flag_drag)
+
+        if event.type == pygame.MOUSEBUTTONUP:
+            flag_drag = False
+            grid_map = tmp_grid_map
+
+        if pygame.mouse.get_pressed()[0]:
+            tmp_grid_map = []
+            for row_i in range(grid_row_num):
+                row_curr = []
+                for col_i in range(grid_col_num):
+                    row_curr.append(grid_map[row_i][col_i])
+                tmp_grid_map.append(row_curr)
+
+            pos = pygame.mouse.get_pos()
+            drag_x_2 = pos[0]
+            drag_y_2 = pos[1]
+
+            drag_c_1 = int((drag_x_1 - page_x) // cell_size)
+            drag_r_1 = int((drag_y_1 - page_y) // cell_size)
+            drag_c_2 = int((drag_x_2 - page_x) // cell_size)
+            drag_r_2 = int((drag_y_2 - page_y) // cell_size)
+
+            for row_i in range(grid_row_num):
+                for col_i in range(grid_col_num):
+                    if (row_i >= drag_r_1 and row_i <= drag_r_2 and 
+                        col_i >= drag_c_1 and col_i <= drag_c_2):
+
+                        tmp_grid_map[row_i][col_i] = 't'
+
+        #     pos = pygame.mouse.get_pos()
+        #     x = pos[0]
+        #     y = pos[1]
+        #     if (x >= page_x and y >= page_y and x < page_x + g.PAGE_WIDTH and y < page_y + g.PAGE_HEIGHT):
+        #         mouse_click_col_i = int((x - page_x) // cell_size)
+        #         mouse_click_row_i = int((y - page_y) // cell_size)
+        #         if flag_brush_type == 't':
+        #             grid_map[mouse_click_row_i][mouse_click_col_i] = 't'
+        #         if flag_brush_type == 'b':
+        #             grid_map[mouse_click_row_i][mouse_click_col_i] = 'b'
+        #         if flag_brush_type == 'i':
+        #             grid_map[mouse_click_row_i][mouse_click_col_i] = 'i'
+        
 
         if pygame.mouse.get_pressed()[2]:
             pos = pygame.mouse.get_pos()
             x = pos[0]
             y = pos[1]
-            mouse_click_col_i = int((x - page_x) // page_grid_col_w)
-            mouse_click_row_i = int((y - page_y) // page_grid_row_h)
+            mouse_click_col_i = int((x - page_x) // cell_size)
+            mouse_click_row_i = int((y - page_y) // cell_size)
             if (mouse_click_row_i >= 0 and 
                 mouse_click_row_i < grid_row_num and 
                 mouse_click_col_i >= 0 and 
@@ -517,26 +556,6 @@ while True:
         pygame.draw.line(screen, g.C_GUIDE, (int(x_1), y_1), (int(x_2), y_2), 2)
         i += 1
 
-    # for i in range(grid_row_num + 1):
-    #     x_1 = page_x
-    #     y_1 = page_y + page_grid_row_h * i
-    #     x_2 = page_x + g.PAGE_WIDTH
-    #     y_2 = page_y + page_grid_row_h * i
-    #     pygame.draw.line(screen, g.C_GRID, (x_1, int(y_1)), (x_2, int(y_2)), 2)
-
-    # for i in range(guides_col_num + 1):
-    #     x_1 = page_x + page_guides_col_w * i + page_guides_col_padding//2
-    #     y_1 = page_y
-    #     x_2 = page_x + page_guides_col_w * i + page_guides_col_padding//2
-    #     y_2 = page_y + g.PAGE_HEIGHT
-    #     pygame.draw.line(screen, '#ff00ff', (int(x_1), y_1), (int(x_2), y_2), 2)
-    # for i in range(guides_row_num + 1):
-    #     x_1 = page_x
-    #     y_1 = page_y + page_guides_row_h * i + page_guides_row_padding//2
-    #     x_2 = page_x + g.PAGE_WIDTH
-    #     y_2 = page_y + page_guides_row_h * i + page_guides_row_padding//2
-    #     pygame.draw.line(screen, '#ff00ff', (x_1, int(y_1)), (x_2, int(y_2)), 2)
-
     # draw_mouse_pos_abs()
     x_1, y_1 = pygame.mouse.get_pos()    
     text_surface = my_font.render(f'{x_1}:{y_1}', False, '#ff00ff')
@@ -573,17 +592,17 @@ while True:
     
     for row_i in range(grid_row_num):
         for col_i in range(grid_col_num):
-            if grid_map[row_i][col_i] == 't':
-                red_x_1 = page_x + page_grid_col_w * col_i
-                red_y_1 = page_y + page_grid_row_h * row_i
-                pygame.draw.rect(screen, '#ff0000', (red_x_1, red_y_1, page_grid_col_w, page_grid_row_h))
-            if grid_map[row_i][col_i] == 'b':
-                red_x_1 = page_x + page_grid_col_w * col_i
-                red_y_1 = page_y + page_grid_row_h * row_i
-                pygame.draw.rect(screen, '#000000', (red_x_1, red_y_1, page_grid_col_w, page_grid_row_h))
-            if grid_map[row_i][col_i] == 'i':
-                red_x_1 = page_x + page_grid_col_w * col_i
-                red_y_1 = page_y + page_grid_row_h * row_i
-                pygame.draw.rect(screen, '#0000ff', (red_x_1, red_y_1, page_grid_col_w, page_grid_row_h))
+            if tmp_grid_map[row_i][col_i] == 't':
+                red_x_1 = page_x + cell_size * col_i
+                red_y_1 = page_y + cell_size * row_i
+                pygame.draw.rect(screen, '#ff0000', (red_x_1, red_y_1, cell_size, cell_size))
+            if tmp_grid_map[row_i][col_i] == 'b':
+                red_x_1 = page_x + cell_size * col_i
+                red_y_1 = page_y + cell_size * row_i
+                pygame.draw.rect(screen, '#000000', (red_x_1, red_y_1, cell_size, cell_size))
+            if tmp_grid_map[row_i][col_i] == 'i':
+                red_x_1 = page_x + cell_size * col_i
+                red_y_1 = page_y + cell_size * row_i
+                pygame.draw.rect(screen, '#0000ff', (red_x_1, red_y_1, cell_size, cell_size))
 
     pygame.display.update()
