@@ -398,11 +398,17 @@ drag_x_1 = -1
 drag_y_1 = -1
 
 tmp_grid_map = []
-for row_i in range(grid_row_num):
-    row_curr = []
-    for col_i in range(grid_col_num):
-        row_curr.append(grid_map[row_i][col_i])
-    tmp_grid_map.append(row_curr)
+
+def grid_map_copy():
+    tmp = []
+    for row_i in range(grid_row_num):
+        row_curr = []
+        for col_i in range(grid_col_num):
+            row_curr.append(grid_map[row_i][col_i])
+        tmp.append(row_curr)
+    return tmp
+
+tmp_grid_map = grid_map_copy()
 
 while True:
     for event in pygame.event.get():
@@ -420,13 +426,9 @@ while True:
             flag_drag = False
             grid_map = tmp_grid_map
 
+        # draw blocks
         if pygame.mouse.get_pressed()[0]:
-            tmp_grid_map = []
-            for row_i in range(grid_row_num):
-                row_curr = []
-                for col_i in range(grid_col_num):
-                    row_curr.append(grid_map[row_i][col_i])
-                tmp_grid_map.append(row_curr)
+            tmp_grid_map = grid_map_copy()
 
             pos = pygame.mouse.get_pos()
             drag_x_2 = pos[0]
@@ -442,33 +444,33 @@ while True:
                     if (row_i >= drag_r_1 and row_i <= drag_r_2 and 
                         col_i >= drag_c_1 and col_i <= drag_c_2):
 
-                        tmp_grid_map[row_i][col_i] = 't'
-
-        #     pos = pygame.mouse.get_pos()
-        #     x = pos[0]
-        #     y = pos[1]
-        #     if (x >= page_x and y >= page_y and x < page_x + g.PAGE_WIDTH and y < page_y + g.PAGE_HEIGHT):
-        #         mouse_click_col_i = int((x - page_x) // cell_size)
-        #         mouse_click_row_i = int((y - page_y) // cell_size)
-        #         if flag_brush_type == 't':
-        #             grid_map[mouse_click_row_i][mouse_click_col_i] = 't'
-        #         if flag_brush_type == 'b':
-        #             grid_map[mouse_click_row_i][mouse_click_col_i] = 'b'
-        #         if flag_brush_type == 'i':
-        #             grid_map[mouse_click_row_i][mouse_click_col_i] = 'i'
+                        if flag_brush_type == 't':
+                            tmp_grid_map[row_i][col_i] = 't'
+                        if flag_brush_type == 'b':
+                            tmp_grid_map[row_i][col_i] = 'b'
+                        if flag_brush_type == 'i':
+                            tmp_grid_map[row_i][col_i] = 'i'
         
-
+        # clear blocks
         if pygame.mouse.get_pressed()[2]:
+            tmp_grid_map = grid_map_copy()
+
             pos = pygame.mouse.get_pos()
-            x = pos[0]
-            y = pos[1]
-            mouse_click_col_i = int((x - page_x) // cell_size)
-            mouse_click_row_i = int((y - page_y) // cell_size)
-            if (mouse_click_row_i >= 0 and 
-                mouse_click_row_i < grid_row_num and 
-                mouse_click_col_i >= 0 and 
-                mouse_click_col_i < grid_col_num):
-                grid_map[mouse_click_row_i][mouse_click_col_i] = ''
+            drag_x_2 = pos[0]
+            drag_y_2 = pos[1]
+
+            drag_c_1 = int((drag_x_1 - page_x) // cell_size)
+            drag_r_1 = int((drag_y_1 - page_y) // cell_size)
+            drag_c_2 = int((drag_x_2 - page_x) // cell_size)
+            drag_r_2 = int((drag_y_2 - page_y) // cell_size)
+
+            for row_i in range(grid_row_num):
+                for col_i in range(grid_col_num):
+                    if (row_i >= drag_r_1 and row_i <= drag_r_2 and 
+                        col_i >= drag_c_1 and col_i <= drag_c_2):
+
+                        tmp_grid_map[row_i][col_i] = ''
+
 
         if event.type == pygame.KEYDOWN:
             if event.key == pygame.K_1:
