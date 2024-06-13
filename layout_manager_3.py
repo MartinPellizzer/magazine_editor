@@ -23,7 +23,7 @@ import mag
 
 # FLAGS
 flag_a4_grid = 1
-flag_brush_type = 't'
+flag_brush_type = 'b'
 show_grid = 1
 
 # FONTS
@@ -42,7 +42,7 @@ guide_size_5 = 99
 guide_size_4 = 124
 guide_size_3 = 165
 guide_size_2 = 248
-guide_size = guide_size_4
+guide_size = guide_size_6
 
 
 grid_col_num = 16 
@@ -70,7 +70,7 @@ page_guides_row_padding = page_grid_row_h*4
 page_guides_row_h = (g.PAGE_HEIGHT - page_guides_row_padding) / guides_row_num
 
 
-grid_col_num = int(g.PAGE_WIDTH / cell_size) + 1
+grid_col_num = int(g.PAGE_WIDTH / cell_size)
 grid_row_num = int(g.PAGE_HEIGHT / cell_size) + 1
 
 grid_map = []
@@ -80,6 +80,15 @@ for row_i in range(grid_row_num):
         row_curr.append('')
     grid_map.append(row_curr)
 
+
+for row_i in range(grid_row_num):
+    for col_i in range(grid_col_num):
+        if (col_i > 4 and col_i < 12 and 
+            row_i > 8 and row_i < 24): 
+            grid_map[row_i][col_i] = 'b'
+        if (col_i > 14 and col_i < 18 and 
+            row_i > 8 and row_i < 16): 
+            grid_map[row_i][col_i] = 'b'
 
 # MOUSE
 mouse_click_col_i = 0
@@ -97,34 +106,29 @@ month_folder = f'{yyyy}_{mm}'
 ####################################################################################################
 # FUNC
 ####################################################################################################
-def a4_draw_grid(draw):
+
+def a4_draw_grid_2(draw):
     for i in range(grid_col_num+1):
-        x_1 = a4_grid_col_w*i
+        x_1 = int(cell_size*10/2*i)
         y_1 = 0
-        x_2 = a4_grid_col_w*i
+        x_2 = int(cell_size*10/2*i)
         y_2 = g.A4_HEIGHT
-        draw.line((x_1, y_1, x_2, y_2), fill='#cdcdcd', width=4)
+        draw.line((x_1, y_1, x_2, y_2), fill=g.C_GRID, width=4)
     for i in range(grid_row_num+1):
         x_1 = 0
-        y_1 = a4_grid_row_h*i
+        y_1 = int(cell_size*10/2*i)
         x_2 = g.A4_WIDTH
-        y_2 = a4_grid_row_h*i
-        draw.line((x_1, y_1, x_2, y_2), fill='#cdcdcd', width=4)
+        y_2 = int(cell_size*10/2*i)
+        draw.line((x_1, y_1, x_2, y_2), fill=g.C_GRID, width=4)
 
-
-def a4_draw_guides(draw):
-    for i in range(guides_col_num+1):
-        x_1 = a4_guides_col_w*i + a4_guides_col_padding//2
+def a4_draw_guides_2(draw):
+    for i in range(grid_col_num+1):
+        x_1 = int(guide_size*10/2*i)
         y_1 = 0
-        x_2 = a4_guides_col_w*i + a4_guides_col_padding//2
+        x_2 = int(guide_size*10/2*i)
         y_2 = g.A4_HEIGHT
-        draw.line((x_1, y_1, x_2, y_2), fill='#ff00ff', width=4)
-    for i in range(guides_row_num + 1):
-        x_1 = 0
-        y_1 = a4_guides_row_h*i + a4_guides_row_padding//2
-        x_2 = g.A4_WIDTH
-        y_2 = a4_guides_row_h*i + a4_guides_row_padding//2
-        draw.line((x_1, y_1, x_2, y_2), fill='#ff00ff', width=4)
+        draw.line((x_1, y_1, x_2, y_2), fill=g.C_GUIDE, width=8)
+
 
 
 def a4_draw_title(draw):
@@ -195,7 +199,7 @@ def a4_draw_title_2(draw):
         draw.text((x_1, y_1), title, (0, 0, 0), font=title_font)
 
 
-def a4_draw_image(img):
+def a4_draw_image_2(img):
     col_i_x_1 = ''
     col_i_y_1 = ''
     col_i_x_2 = ''
@@ -211,11 +215,13 @@ def a4_draw_image(img):
                 else:
                     col_i_x_2 = col_i
                     col_i_y_2 = row_i
+
+    print(col_i_x_1, col_i_y_1, col_i_x_2, col_i_y_2)
     if col_i_x_1 != '' and col_i_y_1 != '' and col_i_x_2 != '' and col_i_y_2 != '':
-        x_1 = int(a4_grid_col_w * col_i_x_1)
-        y_1 = int(a4_grid_row_h * col_i_y_1)
-        x_2 = int(a4_grid_col_w * (col_i_x_2 + 1))
-        y_2 = int(a4_grid_row_h * (col_i_y_2 + 1))
+        x_1 = int(cell_size*10/2 * col_i_x_1)
+        y_1 = int(cell_size*10/2 * col_i_y_1)
+        x_2 = int(cell_size*10/2 * (col_i_x_2 + 1))
+        y_2 = int(cell_size*10/2 * (col_i_y_2 + 1))
         foreground = Image.open("picture.jpg")
         fg_w = x_2 - x_1
         fg_h = y_2 - y_1
@@ -294,23 +300,65 @@ def draw_body(draw, lines, blocks_list):
 
 
 
-def template_preview():
+
+def template_preview_2():
     img = Image.new('RGB', (g.A4_WIDTH, g.A4_HEIGHT), color='white')
     draw = ImageDraw.Draw(img)
 
     if flag_a4_grid:
         a4_draw_grid_2(draw)
-        a4_draw_guides(draw)
+        a4_draw_guides_2(draw)
 
-    a4_draw_image(img)
-    a4_draw_title_2(draw)
+    a4_draw_image_2(img)
 
-    blocks_list = a4_body_blocks()
+    
+    done_grid_map = []
+    for row_i in range(grid_row_num):
+        row_curr = []
+        for col_i in range(grid_col_num):
+            row_curr.append('')
+        done_grid_map.append(row_curr)
+        
+    # get body blocks (lines)
+    lines_coord = []
+    for col_i in range(grid_col_num):
+        for row_i in range(grid_row_num):
+            if grid_map[row_i][col_i] == 'b':
+                if done_grid_map[row_i][col_i] != 'b':
+                    done_grid_map[row_i][col_i] = 'b'
+                    tmp_line_coord = []
+                    for next_col_i in range(col_i, grid_col_num):
+                        if grid_map[row_i][next_col_i] == 'b':
+                            done_grid_map[row_i][next_col_i] = 'b'
+                            tmp_line_coord = [row_i, col_i, row_i, next_col_i]
+                        else:
+                            lines_coord.append(tmp_line_coord)
+                            break
 
-    if blocks_list != []:
-        text = g.DEMO_TEXT
-        lines = text_to_lines(text)
-        draw_body(draw, lines, blocks_list)
+
+
+    text = g.PLACEHOLDER_TEXT.replace('\n', '').strip()
+
+    for line_coord in lines_coord:
+        words = text.split(' ')
+        lines = []
+        line_curr = ''
+        for word in words:
+            _, _, line_curr_w, _ = body_font.getbbox(line_curr)
+            _, _, word_w, _ = body_font.getbbox(word)
+            if line_curr_w + word_w < (line_coord[3] - line_coord[1]) * int(cell_size*10/2):
+                line_curr += f'{word} '
+            else:
+                lines.append(line_curr.strip())
+                line_curr = f'{word} '
+        lines.append(line_curr.strip())
+
+        x_1 = int(cell_size*10/2) * line_coord[1]
+        y_1 = int(cell_size*10/2) * line_coord[0]
+        for i, line in enumerate(lines):
+            if i >= 2: break
+            text = text.replace(line, '').strip()
+            draw.text((x_1, y_1 + (g.BODY_FONT_SIZE * 1.3 * i)), line, (0, 0, 0), font=body_font)
 
     img.show()
 
@@ -365,22 +413,6 @@ def template_save():
     
 
 
-####################################################################################################
-# GRID + GUIDES
-####################################################################################################
-
-    # for i in range(grid_col_num+1):
-    #     x_1 = a4_grid_col_w*i
-    #     y_1 = 0
-    #     x_2 = a4_grid_col_w*i
-    #     y_2 = g.A4_HEIGHT
-    #     draw.line((x_1, y_1, x_2, y_2), fill='#cdcdcd', width=4)
-    # for i in range(grid_row_num+1):
-    #     x_1 = 0
-    #     y_1 = a4_grid_row_h*i
-    #     x_2 = g.A4_WIDTH
-    #     y_2 = a4_grid_row_h*i
-    #     draw.line((x_1, y_1, x_2, y_2), fill='#cdcdcd', width=4)
 
 
 ####################################################################################################
@@ -473,31 +505,14 @@ while True:
 
 
         if event.type == pygame.KEYDOWN:
-            if event.key == pygame.K_1:
-                guides_col_num = 1
-                page_guides_col_padding = page_grid_col_w*4
-                page_guides_col_w = (g.PAGE_WIDTH - page_guides_col_padding) / guides_col_num
-                a4_guides_col_padding = a4_grid_col_w*4
-                a4_guides_col_w = (g.A4_WIDTH - a4_guides_col_padding) / guides_col_num
-            if event.key == pygame.K_2:
-                guides_col_num = 2
-                page_guides_col_padding = page_grid_col_w*4
-                page_guides_col_w = (g.PAGE_WIDTH - page_guides_col_padding) / guides_col_num
-                a4_guides_col_padding = a4_grid_col_w*4
-                a4_guides_col_w = (g.A4_WIDTH - a4_guides_col_padding) / guides_col_num
-            if event.key == pygame.K_3:
-                guides_col_num = 3
-                page_guides_col_padding = page_grid_col_w*4
-                page_guides_col_w = (g.PAGE_WIDTH - page_guides_col_padding) / guides_col_num
-                a4_guides_col_padding = a4_grid_col_w*4
-                a4_guides_col_w = (g.A4_WIDTH - a4_guides_col_padding) / guides_col_num
+            
             if event.key == pygame.K_SPACE:
                 if flag_brush_type == 't': flag_brush_type = 'b'
                 elif flag_brush_type == 'b': flag_brush_type = 'i'
                 elif flag_brush_type == 'i': flag_brush_type = 't'
                 
             if event.key == pygame.K_p:
-                template_preview()
+                template_preview_2()
                 
             # CTRL + S
             if event.key == pygame.K_s and (pygame.key.get_mods() & pygame.KMOD_CTRL):
@@ -572,14 +587,10 @@ while True:
 
     # draw_mouse_pos_cell()
     x_1, y_1 = pygame.mouse.get_pos()
-    col_i = int((x_1 - page_x) // page_grid_col_w)
-    row_i = int((y_1 - page_y) // page_grid_row_h)
+    col_i = int((x_1 - page_x) // cell_size)
+    row_i = int((y_1 - page_y) // cell_size)
     text_surface = my_font.render(f'{col_i}:{row_i}', False, '#ff00ff')
     screen.blit(text_surface, (0, 60))
-
-    # mouse coord - cell clicked index
-    text_surface = my_font.render(f'{mouse_click_col_i}:{mouse_click_row_i}', False, '#ff00ff')
-    screen.blit(text_surface, (0, 90))
     
     # flags
     text_surface = my_font.render(f'flag_a4_grid:{flag_a4_grid}', False, '#ff00ff')
