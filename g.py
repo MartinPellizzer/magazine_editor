@@ -1,6 +1,7 @@
 SLEEP_TIME = 30
 
 C_GRID = '#cdcdcd'
+C_GUIDE = '#ff00ff'
 
 
 with open('demo_article.txt', 'r', encoding='utf-8', errors='ignore') as f: 
