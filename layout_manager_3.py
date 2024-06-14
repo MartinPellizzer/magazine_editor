@@ -37,10 +37,10 @@ C_IMAGES = [
 ]
 
 # FLAGS
-flag_a4_grid = 1
+flag_a4_grid = 0
 flag_brush_type = 'i'
 show_grid = 1
-flag_image_num = 1
+flag_image_num = 0
 
 # FONTS
 body_font = ImageFont.truetype("assets/fonts/arial/ARIAL.TTF", g.BODY_FONT_SIZE)
@@ -136,6 +136,7 @@ def a4_draw_grid_2(draw):
         x_2 = g.A4_WIDTH
         y_2 = int(cell_size*10/2*i)
         draw.line((x_1, y_1, x_2, y_2), fill=g.C_GRID, width=4)
+
 
 def a4_draw_guides_2(draw):
     for i in range(grid_col_num+1):
@@ -254,7 +255,7 @@ def a4_draw_image_3(img):
         is_first_pos = True
         for row_i in range(grid_row_num):
             for col_i in range(grid_col_num):
-                if grid_map[row_i][col_i] == f'i_{i}':
+                if f'i_{i}' in grid_map[row_i][col_i]:
                     if is_first_pos: 
                         col_i_x_1 = col_i
                         col_i_y_1 = row_i
@@ -263,7 +264,6 @@ def a4_draw_image_3(img):
                         col_i_x_2 = col_i
                         col_i_y_2 = row_i
 
-        print(col_i_x_1, col_i_y_1, col_i_x_2, col_i_y_2)
         if col_i_x_1 != '' and col_i_y_1 != '' and col_i_x_2 != '' and col_i_y_2 != '':
             x_1 = int(cell_size*10/2 * col_i_x_1)
             y_1 = int(cell_size*10/2 * col_i_y_1)
@@ -419,7 +419,7 @@ def template_jpg_save(last_template_id_str):
         a4_draw_guides(draw)
 
     a4_draw_title(draw)
-    a4_draw_image(img)
+    a4_draw_image_3(img)
 
     blocks_list = a4_body_blocks()
 
@@ -528,25 +528,35 @@ while True:
                         if flag_brush_type == 'b':
                             tmp_grid_map[row_i][col_i] = 'b'
                         if flag_brush_type == 'i' and flag_image_num == 0:
-                            tmp_grid_map[row_i][col_i] = f'i_0'
+                            if 'i_0' not in tmp_grid_map[row_i][col_i]:
+                                tmp_grid_map[row_i][col_i] += f'i_0'
                         if flag_brush_type == 'i' and flag_image_num == 1:
-                            tmp_grid_map[row_i][col_i] = f'i_1'
+                            if 'i_1' not in tmp_grid_map[row_i][col_i]:
+                                tmp_grid_map[row_i][col_i] += f'i_1'
                         if flag_brush_type == 'i' and flag_image_num == 2:
-                            tmp_grid_map[row_i][col_i] = f'i_2'
+                            if 'i_2' not in tmp_grid_map[row_i][col_i]:
+                                tmp_grid_map[row_i][col_i] += f'i_2'
                         if flag_brush_type == 'i' and flag_image_num == 3:
-                            tmp_grid_map[row_i][col_i] = f'i_3'
+                            if 'i_3' not in tmp_grid_map[row_i][col_i]:
+                                tmp_grid_map[row_i][col_i] += f'i_3'
                         if flag_brush_type == 'i' and flag_image_num == 4:
-                            tmp_grid_map[row_i][col_i] = f'i_4'
+                            if 'i_4' not in tmp_grid_map[row_i][col_i]:
+                                tmp_grid_map[row_i][col_i] += f'i_4'
                         if flag_brush_type == 'i' and flag_image_num == 5:
-                            tmp_grid_map[row_i][col_i] = f'i_5'
+                            if 'i_5' not in tmp_grid_map[row_i][col_i]:
+                                tmp_grid_map[row_i][col_i] += f'i_5'
                         if flag_brush_type == 'i' and flag_image_num == 6:
-                            tmp_grid_map[row_i][col_i] = f'i_6'
+                            if 'i_6' not in tmp_grid_map[row_i][col_i]:
+                                tmp_grid_map[row_i][col_i] += f'i_6'
                         if flag_brush_type == 'i' and flag_image_num == 7:
-                            tmp_grid_map[row_i][col_i] = f'i_7'
+                            if 'i_7' not in tmp_grid_map[row_i][col_i]:
+                                tmp_grid_map[row_i][col_i] += f'i_8'
                         if flag_brush_type == 'i' and flag_image_num == 8:
-                            tmp_grid_map[row_i][col_i] = f'i_8'
+                            if 'i_8' not in tmp_grid_map[row_i][col_i]:
+                                tmp_grid_map[row_i][col_i] += f'i_8'
                         if flag_brush_type == 'i' and flag_image_num == 9:
-                            tmp_grid_map[row_i][col_i] = f'i_9'
+                            if 'i_9' not in tmp_grid_map[row_i][col_i]:
+                                tmp_grid_map[row_i][col_i] += f'i_9'
         
         # clear blocks
         if pygame.mouse.get_pressed()[2]:
@@ -692,43 +702,43 @@ while True:
                 red_y_1 = page_y + cell_size * row_i
                 pygame.draw.rect(screen, '#000000', (red_x_1, red_y_1, cell_size, cell_size))
 
-            if tmp_grid_map[row_i][col_i] == 'i_0':
+            if 'i_0' in tmp_grid_map[row_i][col_i]:
                 red_x_1 = page_x + cell_size * col_i
                 red_y_1 = page_y + cell_size * row_i
                 pygame.draw.rect(screen, C_IMAGES[0], (red_x_1, red_y_1, cell_size, cell_size))
-            if tmp_grid_map[row_i][col_i] == 'i_1':
+            if 'i_1' in tmp_grid_map[row_i][col_i]:
                 red_x_1 = page_x + cell_size * col_i
                 red_y_1 = page_y + cell_size * row_i
                 pygame.draw.rect(screen, C_IMAGES[1], (red_x_1, red_y_1, cell_size, cell_size))
-            if tmp_grid_map[row_i][col_i] == 'i_2':
+            if 'i_2' in tmp_grid_map[row_i][col_i]:
                 red_x_1 = page_x + cell_size * col_i
                 red_y_1 = page_y + cell_size * row_i
                 pygame.draw.rect(screen, C_IMAGES[2], (red_x_1, red_y_1, cell_size, cell_size))
-            if tmp_grid_map[row_i][col_i] == 'i_3':
+            if 'i_3' in tmp_grid_map[row_i][col_i]:
                 red_x_1 = page_x + cell_size * col_i
                 red_y_1 = page_y + cell_size * row_i
                 pygame.draw.rect(screen, C_IMAGES[3], (red_x_1, red_y_1, cell_size, cell_size))
-            if tmp_grid_map[row_i][col_i] == 'i_4':
+            if 'i_4' in tmp_grid_map[row_i][col_i]:
                 red_x_1 = page_x + cell_size * col_i
                 red_y_1 = page_y + cell_size * row_i
                 pygame.draw.rect(screen, C_IMAGES[4], (red_x_1, red_y_1, cell_size, cell_size))
-            if tmp_grid_map[row_i][col_i] == 'i_5':
+            if 'i_5' in tmp_grid_map[row_i][col_i]:
                 red_x_1 = page_x + cell_size * col_i
                 red_y_1 = page_y + cell_size * row_i
                 pygame.draw.rect(screen, C_IMAGES[5], (red_x_1, red_y_1, cell_size, cell_size))
-            if tmp_grid_map[row_i][col_i] == 'i_6':
+            if 'i_6' in tmp_grid_map[row_i][col_i]:
                 red_x_1 = page_x + cell_size * col_i
                 red_y_1 = page_y + cell_size * row_i
                 pygame.draw.rect(screen, C_IMAGES[6], (red_x_1, red_y_1, cell_size, cell_size))
-            if tmp_grid_map[row_i][col_i] == 'i_7':
+            if 'i_7' in tmp_grid_map[row_i][col_i]:
                 red_x_1 = page_x + cell_size * col_i
                 red_y_1 = page_y + cell_size * row_i
                 pygame.draw.rect(screen, C_IMAGES[7], (red_x_1, red_y_1, cell_size, cell_size))
-            if tmp_grid_map[row_i][col_i] == 'i_8':
+            if 'i_8' in tmp_grid_map[row_i][col_i]:
                 red_x_1 = page_x + cell_size * col_i
                 red_y_1 = page_y + cell_size * row_i
                 pygame.draw.rect(screen, C_IMAGES[8], (red_x_1, red_y_1, cell_size, cell_size))
-            if tmp_grid_map[row_i][col_i] == 'i_9':
+            if 'i_9' in tmp_grid_map[row_i][col_i]:
                 red_x_1 = page_x + cell_size * col_i
                 red_y_1 = page_y + cell_size * row_i
                 pygame.draw.rect(screen, C_IMAGES[9], (red_x_1, red_y_1, cell_size, cell_size))
