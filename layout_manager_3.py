@@ -38,9 +38,9 @@ C_IMAGES = [
 
 # FLAGS
 flag_a4_grid = 0
-flag_brush_type = 'i'
-show_grid = 1
-flag_image_num = 0
+flag_brush_type = 'b'
+flag_grid = 1
+flag_image_num = 1
 
 # FONTS
 body_font = ImageFont.truetype("assets/fonts/arial/ARIAL.TTF", g.BODY_FONT_SIZE)
@@ -58,7 +58,7 @@ guide_size_5 = 99
 guide_size_4 = 124
 guide_size_3 = 165
 guide_size_2 = 248
-guide_size = guide_size_6
+guide_size = guide_size_8
 
 
 grid_col_num = 16 
@@ -97,14 +97,14 @@ for row_i in range(grid_row_num):
     grid_map.append(row_curr)
 
 
-for row_i in range(grid_row_num):
-    for col_i in range(grid_col_num):
-        if (col_i > 4 and col_i < 12 and 
-            row_i > 8 and row_i < 24): 
-            grid_map[row_i][col_i] = 'b'
-        if (col_i > 14 and col_i < 18 and 
-            row_i > 8 and row_i < 16): 
-            grid_map[row_i][col_i] = 'b'
+# for row_i in range(grid_row_num):
+#     for col_i in range(grid_col_num):
+#         if (col_i > 4 and col_i < 12 and 
+#             row_i > 8 and row_i < 24): 
+#             grid_map[row_i][col_i] = 'b'
+#         if (col_i > 14 and col_i < 18 and 
+#             row_i > 8 and row_i < 16): 
+#             grid_map[row_i][col_i] = 'b'
 
 # MOUSE
 mouse_click_col_i = 0
@@ -145,7 +145,6 @@ def a4_draw_guides_2(draw):
         x_2 = int(guide_size*10/2*i)
         y_2 = g.A4_HEIGHT
         draw.line((x_1, y_1, x_2, y_2), fill=g.C_GUIDE, width=8)
-
 
 
 def a4_draw_title(draw):
@@ -276,6 +275,24 @@ def a4_draw_image_3(img):
             img.paste(foreground, (x_1, y_1))
 
 
+
+def a4_draw_dark(draw):
+    for row_i in range(grid_row_num):
+        for col_i in range(grid_col_num):
+            if 'd' in grid_map[row_i][col_i]:
+                x_1 = int(cell_size*10/2*col_i)
+                y_1 = int(cell_size*10/2*row_i)
+                x_2 = x_1 + int(cell_size*10/2)
+                y_2 = y_1 + int(cell_size*10/2)
+                draw.rectangle(
+                    (
+                        (x_1, y_1), 
+                        (x_2, y_2)
+                    ), 
+                    fill="#020617"
+                )
+
+
 def a4_body_blocks():
     cols_i_list = []
     if guides_col_num == 1:
@@ -357,6 +374,7 @@ def template_preview_2():
         a4_draw_guides_2(draw)
 
     a4_draw_image_3(img)
+    a4_draw_dark(draw)
 
     
     done_grid_map = []
@@ -370,19 +388,17 @@ def template_preview_2():
     lines_coord = []
     for col_i in range(grid_col_num):
         for row_i in range(grid_row_num):
-            if grid_map[row_i][col_i] == 'b':
+            if 'b' in grid_map[row_i][col_i]:
                 if done_grid_map[row_i][col_i] != 'b':
                     done_grid_map[row_i][col_i] = 'b'
                     tmp_line_coord = []
                     for next_col_i in range(col_i, grid_col_num):
-                        if grid_map[row_i][next_col_i] == 'b':
+                        if 'b' in grid_map[row_i][next_col_i]:
                             done_grid_map[row_i][next_col_i] = 'b'
-                            tmp_line_coord = [row_i, col_i, row_i, next_col_i]
+                            tmp_line_coord = [row_i, col_i, row_i, next_col_i+1]
                         else:
                             lines_coord.append(tmp_line_coord)
                             break
-
-
 
     text = g.PLACEHOLDER_TEXT.replace('\n', '').strip()
 
@@ -398,15 +414,39 @@ def template_preview_2():
             else:
                 lines.append(line_curr.strip())
                 line_curr = f'{word} '
+            if len(lines) >= 2: break
         lines.append(line_curr.strip())
 
         x_1 = int(cell_size*10/2) * line_coord[1]
         y_1 = int(cell_size*10/2) * line_coord[0]
+
+        c_body = '#000000'
+        if 'd' in grid_map[line_coord[0]][line_coord[1]]: c_body = '#ffffff'
+
+        is_last_line = False
         for i, line in enumerate(lines):
             if i >= 2: break
-            text = text.replace(line, '').strip()
-            draw.text((x_1, y_1 + (g.BODY_FONT_SIZE * 1.3 * i)), line, (0, 0, 0), font=body_font)
 
+            if len(lines) - i == 1:
+                is_last_line = True
+                print('last line')
+
+            text = text.replace(line, '').strip()
+            if not is_last_line:
+                words = line.split(" ")
+                print(len(lines), '>>', len(words))
+                words_length = sum(draw.textlength(w, font=body_font) for w in words)
+                space_length = (((line_coord[3] - line_coord[1]) * int(cell_size*10/2)) - words_length) / (len(words) - 1)
+                x = x_1
+                for word in words:
+                    draw.text((x, y_1 + (g.BODY_FONT_SIZE * 1.3 * i)), word, font=body_font, fill=c_body)
+                    x += draw.textlength(word, font=body_font) + space_length
+            else:
+                draw.text((x_1, y_1 + (g.BODY_FONT_SIZE * 1.3 * i)), line, c_body, font=body_font)
+                break
+
+        if is_last_line: break
+                
     img.show()
 
 
@@ -525,8 +565,6 @@ while True:
 
                         if flag_brush_type == 't':
                             tmp_grid_map[row_i][col_i] = 't'
-                        if flag_brush_type == 'b':
-                            tmp_grid_map[row_i][col_i] = 'b'
                         if flag_brush_type == 'i' and flag_image_num == 0:
                             if 'i_0' not in tmp_grid_map[row_i][col_i]:
                                 tmp_grid_map[row_i][col_i] += f'i_0'
@@ -550,13 +588,20 @@ while True:
                                 tmp_grid_map[row_i][col_i] += f'i_6'
                         if flag_brush_type == 'i' and flag_image_num == 7:
                             if 'i_7' not in tmp_grid_map[row_i][col_i]:
-                                tmp_grid_map[row_i][col_i] += f'i_8'
+                                tmp_grid_map[row_i][col_i] += f'i_7'
                         if flag_brush_type == 'i' and flag_image_num == 8:
                             if 'i_8' not in tmp_grid_map[row_i][col_i]:
                                 tmp_grid_map[row_i][col_i] += f'i_8'
                         if flag_brush_type == 'i' and flag_image_num == 9:
                             if 'i_9' not in tmp_grid_map[row_i][col_i]:
                                 tmp_grid_map[row_i][col_i] += f'i_9'
+
+                        if flag_brush_type == 'd':
+                            if 'd' not in tmp_grid_map[row_i][col_i]:
+                                tmp_grid_map[row_i][col_i] += 'd'
+                        if flag_brush_type == 'b':
+                            if 'b' not in tmp_grid_map[row_i][col_i]:
+                                tmp_grid_map[row_i][col_i] += 'b'
         
         # clear blocks
         if pygame.mouse.get_pressed()[2]:
@@ -579,7 +624,7 @@ while True:
                         tmp_grid_map[row_i][col_i] = ''
 
         if event.type == pygame.KEYDOWN:
-            if event.key == pygame.K_0: flag_image_num = 0
+            # if event.key == pygame.K_0: flag_image_num = 0
             if event.key == pygame.K_1: flag_image_num = 1
             if event.key == pygame.K_2: flag_image_num = 2
             if event.key == pygame.K_3: flag_image_num = 3
@@ -589,14 +634,20 @@ while True:
             if event.key == pygame.K_7: flag_image_num = 7
             if event.key == pygame.K_8: flag_image_num = 8
             if event.key == pygame.K_9: flag_image_num = 9
+            
+            # if event.key == pygame.K_d: flag_brush_type = 'd'
 
             if event.key == pygame.K_SPACE:
-                if flag_brush_type == 't': flag_brush_type = 'b'
-                elif flag_brush_type == 'b': flag_brush_type = 'i'
-                elif flag_brush_type == 'i': flag_brush_type = 't'
+                if flag_brush_type == 'i': flag_brush_type = 't'
+                elif flag_brush_type == 't': flag_brush_type = 'b'
+                elif flag_brush_type == 'b': flag_brush_type = 'd'
+                elif flag_brush_type == 'd': flag_brush_type = 'i'
                 
             if event.key == pygame.K_p:
                 template_preview_2()
+                
+            if event.key == pygame.K_g:
+                flag_grid = not flag_grid
                 
             # CTRL + S
             if event.key == pygame.K_s and (pygame.key.get_mods() & pygame.KMOD_CTRL):
@@ -627,35 +678,6 @@ while True:
     # draw page bg
     pygame.draw.rect(screen, '#ffffff', (page_x, page_y, g.PAGE_WIDTH, g.PAGE_HEIGHT))
 
-
-    i = 0
-    for _ in range(9999):
-        if cell_size * i > g.PAGE_WIDTH: break
-        x_1 = page_x + cell_size * i
-        y_1 = page_y
-        x_2 = page_x + cell_size * i
-        y_2 = page_y + g.PAGE_HEIGHT
-        pygame.draw.line(screen, g.C_GRID, (int(x_1), y_1), (int(x_2), y_2), 2)
-        i += 1  
-    i = 0
-    for _ in range(9999):
-        if cell_size * i > g.PAGE_HEIGHT: break
-        x_1 = page_x
-        y_1 = page_y + cell_size * i
-        x_2 = page_x + g.PAGE_WIDTH
-        y_2 = page_y + cell_size * i
-        pygame.draw.line(screen, g.C_GRID, (x_1, int(y_1)), (x_2, int(y_2)), 2)
-        i += 1
-
-    i = 0
-    for _ in range(9999):
-        if guide_size * i > g.PAGE_WIDTH: break
-        x_1 = page_x + guide_size * i
-        y_1 = page_y
-        x_2 = page_x + guide_size * i
-        y_2 = page_y + g.PAGE_HEIGHT
-        pygame.draw.line(screen, g.C_GUIDE, (int(x_1), y_1), (int(x_2), y_2), 2)
-        i += 1
 
     # draw_mouse_pos_abs()
     x_1, y_1 = pygame.mouse.get_pos()    
@@ -697,50 +719,86 @@ while True:
                 red_x_1 = page_x + cell_size * col_i
                 red_y_1 = page_y + cell_size * row_i
                 pygame.draw.rect(screen, '#ff0000', (red_x_1, red_y_1, cell_size, cell_size))
-            if tmp_grid_map[row_i][col_i] == 'b':
+
+            if 'i_1' in tmp_grid_map[row_i][col_i]:
+                red_x_1 = page_x + cell_size * col_i
+                red_y_1 = page_y + cell_size * row_i
+                pygame.draw.rect(screen, C_IMAGES[0], (red_x_1, red_y_1, cell_size, cell_size))
+            if 'i_2' in tmp_grid_map[row_i][col_i]:
+                red_x_1 = page_x + cell_size * col_i
+                red_y_1 = page_y + cell_size * row_i
+                pygame.draw.rect(screen, C_IMAGES[1], (red_x_1, red_y_1, cell_size, cell_size))
+            if 'i_3' in tmp_grid_map[row_i][col_i]:
+                red_x_1 = page_x + cell_size * col_i
+                red_y_1 = page_y + cell_size * row_i
+                pygame.draw.rect(screen, C_IMAGES[2], (red_x_1, red_y_1, cell_size, cell_size))
+            if 'i_4' in tmp_grid_map[row_i][col_i]:
+                red_x_1 = page_x + cell_size * col_i
+                red_y_1 = page_y + cell_size * row_i
+                pygame.draw.rect(screen, C_IMAGES[3], (red_x_1, red_y_1, cell_size, cell_size))
+            if 'i_5' in tmp_grid_map[row_i][col_i]:
+                red_x_1 = page_x + cell_size * col_i
+                red_y_1 = page_y + cell_size * row_i
+                pygame.draw.rect(screen, C_IMAGES[4], (red_x_1, red_y_1, cell_size, cell_size))
+            if 'i_6' in tmp_grid_map[row_i][col_i]:
+                red_x_1 = page_x + cell_size * col_i
+                red_y_1 = page_y + cell_size * row_i
+                pygame.draw.rect(screen, C_IMAGES[5], (red_x_1, red_y_1, cell_size, cell_size))
+            if 'i_7' in tmp_grid_map[row_i][col_i]:
+                red_x_1 = page_x + cell_size * col_i
+                red_y_1 = page_y + cell_size * row_i
+                pygame.draw.rect(screen, C_IMAGES[6], (red_x_1, red_y_1, cell_size, cell_size))
+            if 'i_8' in tmp_grid_map[row_i][col_i]:
+                red_x_1 = page_x + cell_size * col_i
+                red_y_1 = page_y + cell_size * row_i
+                pygame.draw.rect(screen, C_IMAGES[7], (red_x_1, red_y_1, cell_size, cell_size))
+            if 'i_9' in tmp_grid_map[row_i][col_i]:
+                red_x_1 = page_x + cell_size * col_i
+                red_y_1 = page_y + cell_size * row_i
+                pygame.draw.rect(screen, C_IMAGES[8], (red_x_1, red_y_1, cell_size, cell_size))
+            # if 'i_0' in tmp_grid_map[row_i][col_i]:
+            #     red_x_1 = page_x + cell_size * col_i
+            #     red_y_1 = page_y + cell_size * row_i
+            #     pygame.draw.rect(screen, C_IMAGES[9], (red_x_1, red_y_1, cell_size, cell_size))
+
+            if 'd' in tmp_grid_map[row_i][col_i]:
+                red_x_1 = page_x + cell_size * col_i
+                red_y_1 = page_y + cell_size * row_i
+                pygame.draw.rect(screen, '#333333', (red_x_1, red_y_1, cell_size, cell_size))
+
+            if 'b' in tmp_grid_map[row_i][col_i]:
                 red_x_1 = page_x + cell_size * col_i
                 red_y_1 = page_y + cell_size * row_i
                 pygame.draw.rect(screen, '#000000', (red_x_1, red_y_1, cell_size, cell_size))
 
-            if 'i_0' in tmp_grid_map[row_i][col_i]:
-                red_x_1 = page_x + cell_size * col_i
-                red_y_1 = page_y + cell_size * row_i
-                pygame.draw.rect(screen, C_IMAGES[0], (red_x_1, red_y_1, cell_size, cell_size))
-            if 'i_1' in tmp_grid_map[row_i][col_i]:
-                red_x_1 = page_x + cell_size * col_i
-                red_y_1 = page_y + cell_size * row_i
-                pygame.draw.rect(screen, C_IMAGES[1], (red_x_1, red_y_1, cell_size, cell_size))
-            if 'i_2' in tmp_grid_map[row_i][col_i]:
-                red_x_1 = page_x + cell_size * col_i
-                red_y_1 = page_y + cell_size * row_i
-                pygame.draw.rect(screen, C_IMAGES[2], (red_x_1, red_y_1, cell_size, cell_size))
-            if 'i_3' in tmp_grid_map[row_i][col_i]:
-                red_x_1 = page_x + cell_size * col_i
-                red_y_1 = page_y + cell_size * row_i
-                pygame.draw.rect(screen, C_IMAGES[3], (red_x_1, red_y_1, cell_size, cell_size))
-            if 'i_4' in tmp_grid_map[row_i][col_i]:
-                red_x_1 = page_x + cell_size * col_i
-                red_y_1 = page_y + cell_size * row_i
-                pygame.draw.rect(screen, C_IMAGES[4], (red_x_1, red_y_1, cell_size, cell_size))
-            if 'i_5' in tmp_grid_map[row_i][col_i]:
-                red_x_1 = page_x + cell_size * col_i
-                red_y_1 = page_y + cell_size * row_i
-                pygame.draw.rect(screen, C_IMAGES[5], (red_x_1, red_y_1, cell_size, cell_size))
-            if 'i_6' in tmp_grid_map[row_i][col_i]:
-                red_x_1 = page_x + cell_size * col_i
-                red_y_1 = page_y + cell_size * row_i
-                pygame.draw.rect(screen, C_IMAGES[6], (red_x_1, red_y_1, cell_size, cell_size))
-            if 'i_7' in tmp_grid_map[row_i][col_i]:
-                red_x_1 = page_x + cell_size * col_i
-                red_y_1 = page_y + cell_size * row_i
-                pygame.draw.rect(screen, C_IMAGES[7], (red_x_1, red_y_1, cell_size, cell_size))
-            if 'i_8' in tmp_grid_map[row_i][col_i]:
-                red_x_1 = page_x + cell_size * col_i
-                red_y_1 = page_y + cell_size * row_i
-                pygame.draw.rect(screen, C_IMAGES[8], (red_x_1, red_y_1, cell_size, cell_size))
-            if 'i_9' in tmp_grid_map[row_i][col_i]:
-                red_x_1 = page_x + cell_size * col_i
-                red_y_1 = page_y + cell_size * row_i
-                pygame.draw.rect(screen, C_IMAGES[9], (red_x_1, red_y_1, cell_size, cell_size))
+    if flag_grid:
+        i = 0
+        for _ in range(9999):
+            if cell_size * i > g.PAGE_WIDTH: break
+            x_1 = page_x + cell_size * i
+            y_1 = page_y
+            x_2 = page_x + cell_size * i
+            y_2 = page_y + g.PAGE_HEIGHT
+            pygame.draw.line(screen, g.C_GRID, (int(x_1), y_1), (int(x_2), y_2), 2)
+            i += 1  
+        i = 0
+        for _ in range(9999):
+            if cell_size * i > g.PAGE_HEIGHT: break
+            x_1 = page_x
+            y_1 = page_y + cell_size * i
+            x_2 = page_x + g.PAGE_WIDTH
+            y_2 = page_y + cell_size * i
+            pygame.draw.line(screen, g.C_GRID, (x_1, int(y_1)), (x_2, int(y_2)), 2)
+            i += 1
+
+        i = 0
+        for _ in range(9999):
+            if guide_size * i > g.PAGE_WIDTH: break
+            x_1 = page_x + guide_size * i
+            y_1 = page_y
+            x_2 = page_x + guide_size * i
+            y_2 = page_y + g.PAGE_HEIGHT
+            pygame.draw.line(screen, g.C_GUIDE, (int(x_1), y_1), (int(x_2), y_2), 2)
+            i += 1
 
     pygame.display.update()
