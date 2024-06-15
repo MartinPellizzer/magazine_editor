@@ -21,3 +21,22 @@ WINDOW_WIDTH = 1280
 WINDOW_HEIGHT = 720
 PAGE_WIDTH = int(A4_WIDTH/10*2)
 PAGE_HEIGHT = int(A4_HEIGHT/10*2)
+
+CELL_SIZE = 16
+GRID_COL_NUM = int(PAGE_WIDTH / CELL_SIZE)
+GRID_ROW_NUM = int(PAGE_HEIGHT / CELL_SIZE) + 1
+
+
+C_IMAGES = [
+    '#41EAD4',
+    '#FF9F1C',
+    '#2A1E5C',
+    '#55286F',
+    '#8EA604',
+    '#FF4E00',
+    '#2AB7CA',
+    '#717C89',
+    '#ADF6B1',
+    '#223127',
+    '#CE5374',
+]
