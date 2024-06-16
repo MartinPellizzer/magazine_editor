@@ -22,7 +22,7 @@ import mag
 ####################################################################################################
 
 # FLAGS
-flag_brush_type = 'b'
+flag_brush_type = 't'
 flag_window_grid = 1
 flag_a4_grid = 1
 flag_image_num = 1
@@ -40,17 +40,12 @@ page_x = g.WINDOW_WIDTH//2 - g.PAGE_WIDTH//2
 page_y = g.WINDOW_HEIGHT//2 - g.PAGE_HEIGHT//2
 
 # GRID
-guide_size_8 = 62
-guide_size_7 = 71
-guide_size_6 = 83
-guide_size_5 = 99
-guide_size_4 = 124
-guide_size_3 = 165
-guide_size_2 = 248
-guide_size = guide_size_8
+guide_sizes = [62, 71, 83, 99, 124, 165, 248]
+guide_size_index = 0
+guide_size = guide_sizes[guide_size_index]
 
-grid_col_num = int(g.PAGE_WIDTH / g.CELL_SIZE)
-grid_row_num = int(g.PAGE_HEIGHT / g.CELL_SIZE) + 1
+grid_col_num = int(g.PAGE_WIDTH / g.GRID_CELL_SIZE)
+grid_row_num = int(g.PAGE_HEIGHT / g.GRID_CELL_SIZE) + 1
 
 grid_map = []
 for row_i in range(grid_row_num):
@@ -95,10 +90,10 @@ def a4_draw_image(img):
                         col_i_y_2 = row_i
 
         if col_i_x_1 != '' and col_i_y_1 != '' and col_i_x_2 != '' and col_i_y_2 != '':
-            x_1 = int(g.CELL_SIZE*10/2 * col_i_x_1)
-            y_1 = int(g.CELL_SIZE*10/2 * col_i_y_1)
-            x_2 = int(g.CELL_SIZE*10/2 * (col_i_x_2 + 1))
-            y_2 = int(g.CELL_SIZE*10/2 * (col_i_y_2 + 1))
+            x_1 = g.A4_CELL_SIZE * col_i_x_1
+            y_1 = g.A4_CELL_SIZE * col_i_y_1
+            x_2 = g.A4_CELL_SIZE * (col_i_x_2 + 1)
+            y_2 = g.A4_CELL_SIZE * (col_i_y_2 + 1)
             foreground = Image.open(f"assets/images/{i}.jpg")
             fg_w = x_2 - x_1
             fg_h = y_2 - y_1
@@ -110,10 +105,10 @@ def a4_draw_dark(draw):
     for row_i in range(grid_row_num):
         for col_i in range(grid_col_num):
             if 'd' in grid_map[row_i][col_i]:
-                x_1 = int(g.CELL_SIZE*10/2*col_i)
-                y_1 = int(g.CELL_SIZE*10/2*row_i)
-                x_2 = x_1 + int(g.CELL_SIZE*10/2)
-                y_2 = y_1 + int(g.CELL_SIZE*10/2)
+                x_1 = g.A4_CELL_SIZE * col_i
+                y_1 = g.A4_CELL_SIZE * row_i
+                x_2 = x_1 + g.A4_CELL_SIZE
+                y_2 = y_1 + g.A4_CELL_SIZE
                 draw.rectangle(
                     (
                         (x_1, y_1), 
@@ -121,6 +116,50 @@ def a4_draw_dark(draw):
                     ), 
                     fill="#020617"
                 )
+
+
+def a4_draw_title(draw):
+    col_i_1 = -1
+    row_i_1 = -1
+    col_i_2 = -1
+    row_i_2 = -1
+    for row_i in range(grid_row_num):
+        for col_i in range(grid_col_num):
+            if 't' in grid_map[row_i][col_i]:
+                if col_i_1 == -1 and row_i_1 == -1:
+                    col_i_1 = col_i
+                    row_i_1 = row_i
+                else:
+                    col_i_2 = col_i
+                    row_i_2 = row_i
+
+    title_available_w = (col_i_2 - col_i_1 + 1) * g.A4_CELL_SIZE
+    title_available_h = (row_i_2 - row_i_1 + 1) * g.A4_CELL_SIZE
+
+    title = 'Nature\'s Wonderland'
+    title = 'This is a title'
+    title = 'How to sanitize poultry\nmeat with ozone'
+
+    lines = title.split('\n')
+    line_longest = ''
+    for line in lines:
+        if len(line_longest) < len(line): line_longest = line
+    
+    title_font_size = 1
+    title_font = ImageFont.truetype("assets/fonts/arial/ARIAL.TTF", title_font_size)
+    for _ in range(999):
+        print(title_font_size)
+        title_font = ImageFont.truetype("assets/fonts/arial/ARIAL.TTF", title_font_size)
+        _, _, title_curr_w, title_curr_h = title_font.getbbox(line_longest)
+        if title_curr_w > title_available_w or title_curr_h > title_available_h:
+            break
+        else:
+            title_font_size += 1
+
+    if col_i_1 != -1 and row_i_1 != -1 and col_i_2 != -1 and row_i_2 != -1:
+        x_1 = g.A4_CELL_SIZE * col_i_1
+        y_1 = g.A4_CELL_SIZE * row_i_1
+        draw.text((x_1, y_1), title, (0, 0, 0), font=title_font)
 
 
 def a4_draw_text(draw):
@@ -155,7 +194,7 @@ def a4_draw_text(draw):
         for word in words:
             _, _, line_curr_w, _ = body_font.getbbox(line_curr)
             _, _, word_w, _ = body_font.getbbox(word)
-            if line_curr_w + word_w < (line_coord[3] - line_coord[1]) * int(g.CELL_SIZE*10/2):
+            if line_curr_w + word_w < (line_coord[3] - line_coord[1]) * g.A4_CELL_SIZE:
                 line_curr += f'{word} '
             else:
                 lines.append(line_curr.strip())
@@ -163,8 +202,8 @@ def a4_draw_text(draw):
             if len(lines) >= 2: break
         lines.append(line_curr.strip())
 
-        x_1 = int(g.CELL_SIZE*10/2) * line_coord[1]
-        y_1 = int(g.CELL_SIZE*10/2) * line_coord[0]
+        x_1 = g.A4_CELL_SIZE * line_coord[1]
+        y_1 = g.A4_CELL_SIZE * line_coord[0]
 
         c_body = '#000000'
         if 'd' in grid_map[line_coord[0]][line_coord[1]]: c_body = '#ffffff'
@@ -182,7 +221,7 @@ def a4_draw_text(draw):
                 words = line.split(" ")
                 print(len(lines), '>>', len(words))
                 words_length = sum(draw.textlength(w, font=body_font) for w in words)
-                space_length = (((line_coord[3] - line_coord[1]) * int(g.CELL_SIZE*10/2)) - words_length) / (len(words) - 1)
+                space_length = (((line_coord[3] - line_coord[1]) * g.A4_CELL_SIZE) - words_length) / (len(words) - 1)
                 x = x_1
                 for word in words:
                     draw.text((x, y_1 + (g.BODY_FONT_SIZE * 1.3 * i)), word, font=body_font, fill=c_body)
@@ -204,6 +243,7 @@ def a4_template_preview():
 
     a4_draw_image(img)
     a4_draw_dark(draw)
+    a4_draw_title(draw)
     a4_draw_text(draw)
 
     img.show()
@@ -236,6 +276,7 @@ def a4_template_save():
         mag.a4_draw_guides(draw, guide_size)
     a4_draw_image(img)
     a4_draw_dark(draw)
+    a4_draw_title(draw)
     a4_draw_text(draw)
     export_filepath = f'templates/{month_folder}/{last_template_id_str}.jpg'
     img.save(export_filepath)
@@ -296,18 +337,16 @@ while True:
             drag_x_2 = pos[0]
             drag_y_2 = pos[1]
 
-            drag_c_1 = int((drag_x_1 - page_x) // g.CELL_SIZE)
-            drag_r_1 = int((drag_y_1 - page_y) // g.CELL_SIZE)
-            drag_c_2 = int((drag_x_2 - page_x) // g.CELL_SIZE)
-            drag_r_2 = int((drag_y_2 - page_y) // g.CELL_SIZE)
+            drag_c_1 = int((drag_x_1 - page_x) // g.GRID_CELL_SIZE)
+            drag_r_1 = int((drag_y_1 - page_y) // g.GRID_CELL_SIZE)
+            drag_c_2 = int((drag_x_2 - page_x) // g.GRID_CELL_SIZE)
+            drag_r_2 = int((drag_y_2 - page_y) // g.GRID_CELL_SIZE)
 
             for row_i in range(grid_row_num):
                 for col_i in range(grid_col_num):
                     if (row_i >= drag_r_1 and row_i <= drag_r_2 and 
                         col_i >= drag_c_1 and col_i <= drag_c_2):
 
-                        if flag_brush_type == 't':
-                            tmp_grid_map[row_i][col_i] = 't'
                         if flag_brush_type == 'i' and flag_image_num == 0:
                             if 'i_0' not in tmp_grid_map[row_i][col_i]:
                                 tmp_grid_map[row_i][col_i] += f'i_0'
@@ -345,6 +384,9 @@ while True:
                         if flag_brush_type == 'b':
                             if 'b' not in tmp_grid_map[row_i][col_i]:
                                 tmp_grid_map[row_i][col_i] += 'b'
+                        if flag_brush_type == 't':
+                            if 't' not in tmp_grid_map[row_i][col_i]:
+                                tmp_grid_map[row_i][col_i] += 't'
         
         # clear blocks
         if pygame.mouse.get_pressed()[2]:
@@ -354,10 +396,10 @@ while True:
             drag_x_2 = pos[0]
             drag_y_2 = pos[1]
 
-            drag_c_1 = int((drag_x_1 - page_x) // g.CELL_SIZE)
-            drag_r_1 = int((drag_y_1 - page_y) // g.CELL_SIZE)
-            drag_c_2 = int((drag_x_2 - page_x) // g.CELL_SIZE)
-            drag_r_2 = int((drag_y_2 - page_y) // g.CELL_SIZE)
+            drag_c_1 = int((drag_x_1 - page_x) // g.GRID_CELL_SIZE)
+            drag_r_1 = int((drag_y_1 - page_y) // g.GRID_CELL_SIZE)
+            drag_c_2 = int((drag_x_2 - page_x) // g.GRID_CELL_SIZE)
+            drag_r_2 = int((drag_y_2 - page_y) // g.GRID_CELL_SIZE)
 
             for row_i in range(grid_row_num):
                 for col_i in range(grid_col_num):
@@ -397,19 +439,13 @@ while True:
                 a4_template_save()
             
             if event.unicode == "+":
-                if guide_size == guide_size_2: guide_size = guide_size_3
-                elif guide_size == guide_size_3: guide_size = guide_size_4
-                elif guide_size == guide_size_4: guide_size = guide_size_5
-                elif guide_size == guide_size_5: guide_size = guide_size_6
-                elif guide_size == guide_size_6: guide_size = guide_size_7
-                elif guide_size == guide_size_7: guide_size = guide_size_8
+                if guide_size_index > 0: 
+                    guide_size_index -= 1
+                    guide_size = guide_sizes[guide_size_index]
             if event.unicode == "-":
-                if guide_size == guide_size_8: guide_size = guide_size_7
-                elif guide_size == guide_size_7: guide_size = guide_size_6
-                elif guide_size == guide_size_6: guide_size = guide_size_5
-                elif guide_size == guide_size_5: guide_size = guide_size_4
-                elif guide_size == guide_size_4: guide_size = guide_size_3
-                elif guide_size == guide_size_3: guide_size = guide_size_2
+                if guide_size_index < len(guide_sizes)-1: 
+                    guide_size_index += 1
+                    guide_size = guide_sizes[guide_size_index]
                 
     # draw window bg
     pygame.draw.rect(screen, '#000000', (0, 0, g.PAGE_WIDTH, g.PAGE_HEIGHT))
@@ -432,8 +468,8 @@ while True:
 
     # draw_mouse_pos_cell()
     x_1, y_1 = pygame.mouse.get_pos()
-    col_i = int((x_1 - page_x) // g.CELL_SIZE)
-    row_i = int((y_1 - page_y) // g.CELL_SIZE)
+    col_i = int((x_1 - page_x) // g.GRID_CELL_SIZE)
+    row_i = int((y_1 - page_y) // g.GRID_CELL_SIZE)
     text_surface = my_font.render(f'{col_i}:{row_i}', False, '#ff00ff')
     screen.blit(text_surface, (0, 60))
     
@@ -454,75 +490,77 @@ while True:
     
     for row_i in range(grid_row_num):
         for col_i in range(grid_col_num):
-            if tmp_grid_map[row_i][col_i] == 't':
-                red_x_1 = page_x + g.CELL_SIZE * col_i
-                red_y_1 = page_y + g.CELL_SIZE * row_i
-                pygame.draw.rect(screen, '#ff0000', (red_x_1, red_y_1, g.CELL_SIZE, g.CELL_SIZE))
-
+            
             if 'i_1' in tmp_grid_map[row_i][col_i]:
-                red_x_1 = page_x + g.CELL_SIZE * col_i
-                red_y_1 = page_y + g.CELL_SIZE * row_i
-                pygame.draw.rect(screen, g.C_IMAGES[0], (red_x_1, red_y_1, g.CELL_SIZE, g.CELL_SIZE))
+                red_x_1 = page_x + g.GRID_CELL_SIZE * col_i
+                red_y_1 = page_y + g.GRID_CELL_SIZE * row_i
+                pygame.draw.rect(screen, g.C_IMAGES[0], (red_x_1, red_y_1, g.GRID_CELL_SIZE, g.GRID_CELL_SIZE))
             if 'i_2' in tmp_grid_map[row_i][col_i]:
-                red_x_1 = page_x + g.CELL_SIZE * col_i
-                red_y_1 = page_y + g.CELL_SIZE * row_i
-                pygame.draw.rect(screen, g.C_IMAGES[1], (red_x_1, red_y_1, g.CELL_SIZE, g.CELL_SIZE))
+                red_x_1 = page_x + g.GRID_CELL_SIZE * col_i
+                red_y_1 = page_y + g.GRID_CELL_SIZE * row_i
+                pygame.draw.rect(screen, g.C_IMAGES[1], (red_x_1, red_y_1, g.GRID_CELL_SIZE, g.GRID_CELL_SIZE))
             if 'i_3' in tmp_grid_map[row_i][col_i]:
-                red_x_1 = page_x + g.CELL_SIZE * col_i
-                red_y_1 = page_y + g.CELL_SIZE * row_i
-                pygame.draw.rect(screen, g.C_IMAGES[2], (red_x_1, red_y_1, g.CELL_SIZE, g.CELL_SIZE))
+                red_x_1 = page_x + g.GRID_CELL_SIZE * col_i
+                red_y_1 = page_y + g.GRID_CELL_SIZE * row_i
+                pygame.draw.rect(screen, g.C_IMAGES[2], (red_x_1, red_y_1, g.GRID_CELL_SIZE, g.GRID_CELL_SIZE))
             if 'i_4' in tmp_grid_map[row_i][col_i]:
-                red_x_1 = page_x + g.CELL_SIZE * col_i
-                red_y_1 = page_y + g.CELL_SIZE * row_i
-                pygame.draw.rect(screen, g.C_IMAGES[3], (red_x_1, red_y_1, g.CELL_SIZE, g.CELL_SIZE))
+                red_x_1 = page_x + g.GRID_CELL_SIZE * col_i
+                red_y_1 = page_y + g.GRID_CELL_SIZE * row_i
+                pygame.draw.rect(screen, g.C_IMAGES[3], (red_x_1, red_y_1, g.GRID_CELL_SIZE, g.GRID_CELL_SIZE))
             if 'i_5' in tmp_grid_map[row_i][col_i]:
-                red_x_1 = page_x + g.CELL_SIZE * col_i
-                red_y_1 = page_y + g.CELL_SIZE * row_i
-                pygame.draw.rect(screen, g.C_IMAGES[4], (red_x_1, red_y_1, g.CELL_SIZE, g.CELL_SIZE))
+                red_x_1 = page_x + g.GRID_CELL_SIZE * col_i
+                red_y_1 = page_y + g.GRID_CELL_SIZE * row_i
+                pygame.draw.rect(screen, g.C_IMAGES[4], (red_x_1, red_y_1, g.GRID_CELL_SIZE, g.GRID_CELL_SIZE))
             if 'i_6' in tmp_grid_map[row_i][col_i]:
-                red_x_1 = page_x + g.CELL_SIZE * col_i
-                red_y_1 = page_y + g.CELL_SIZE * row_i
-                pygame.draw.rect(screen, g.C_IMAGES[5], (red_x_1, red_y_1, g.CELL_SIZE, g.CELL_SIZE))
+                red_x_1 = page_x + g.GRID_CELL_SIZE * col_i
+                red_y_1 = page_y + g.GRID_CELL_SIZE * row_i
+                pygame.draw.rect(screen, g.C_IMAGES[5], (red_x_1, red_y_1, g.GRID_CELL_SIZE, g.GRID_CELL_SIZE))
             if 'i_7' in tmp_grid_map[row_i][col_i]:
-                red_x_1 = page_x + g.CELL_SIZE * col_i
-                red_y_1 = page_y + g.CELL_SIZE * row_i
-                pygame.draw.rect(screen, g.C_IMAGES[6], (red_x_1, red_y_1, g.CELL_SIZE, g.CELL_SIZE))
+                red_x_1 = page_x + g.GRID_CELL_SIZE * col_i
+                red_y_1 = page_y + g.GRID_CELL_SIZE * row_i
+                pygame.draw.rect(screen, g.C_IMAGES[6], (red_x_1, red_y_1, g.GRID_CELL_SIZE, g.GRID_CELL_SIZE))
             if 'i_8' in tmp_grid_map[row_i][col_i]:
-                red_x_1 = page_x + g.CELL_SIZE * col_i
-                red_y_1 = page_y + g.CELL_SIZE * row_i
-                pygame.draw.rect(screen, g.C_IMAGES[7], (red_x_1, red_y_1, g.CELL_SIZE, g.CELL_SIZE))
+                red_x_1 = page_x + g.GRID_CELL_SIZE * col_i
+                red_y_1 = page_y + g.GRID_CELL_SIZE * row_i
+                pygame.draw.rect(screen, g.C_IMAGES[7], (red_x_1, red_y_1, g.GRID_CELL_SIZE, g.GRID_CELL_SIZE))
             if 'i_9' in tmp_grid_map[row_i][col_i]:
-                red_x_1 = page_x + g.CELL_SIZE * col_i
-                red_y_1 = page_y + g.CELL_SIZE * row_i
-                pygame.draw.rect(screen, g.C_IMAGES[8], (red_x_1, red_y_1, g.CELL_SIZE, g.CELL_SIZE))
+                red_x_1 = page_x + g.GRID_CELL_SIZE * col_i
+                red_y_1 = page_y + g.GRID_CELL_SIZE * row_i
+                pygame.draw.rect(screen, g.C_IMAGES[8], (red_x_1, red_y_1, g.GRID_CELL_SIZE, g.GRID_CELL_SIZE))
 
             if 'd' in tmp_grid_map[row_i][col_i]:
-                red_x_1 = page_x + g.CELL_SIZE * col_i
-                red_y_1 = page_y + g.CELL_SIZE * row_i
-                pygame.draw.rect(screen, '#333333', (red_x_1, red_y_1, g.CELL_SIZE, g.CELL_SIZE))
+                red_x_1 = page_x + g.GRID_CELL_SIZE * col_i
+                red_y_1 = page_y + g.GRID_CELL_SIZE * row_i
+                pygame.draw.rect(screen, '#333333', (red_x_1, red_y_1, g.GRID_CELL_SIZE, g.GRID_CELL_SIZE))
 
             if 'b' in tmp_grid_map[row_i][col_i]:
-                red_x_1 = page_x + g.CELL_SIZE * col_i
-                red_y_1 = page_y + g.CELL_SIZE * row_i
-                pygame.draw.rect(screen, '#000000', (red_x_1, red_y_1, g.CELL_SIZE, g.CELL_SIZE))
+                red_x_1 = page_x + g.GRID_CELL_SIZE * col_i
+                red_y_1 = page_y + g.GRID_CELL_SIZE * row_i
+                pygame.draw.rect(screen, '#000000', (red_x_1, red_y_1, g.GRID_CELL_SIZE, g.GRID_CELL_SIZE))
+            
+            if 't' in tmp_grid_map[row_i][col_i]:
+                red_x_1 = page_x + g.GRID_CELL_SIZE * col_i
+                red_y_1 = page_y + g.GRID_CELL_SIZE * row_i
+                pygame.draw.rect(screen, '#ff0000', (red_x_1, red_y_1, g.GRID_CELL_SIZE, g.GRID_CELL_SIZE))
+
 
     if flag_window_grid:
         i = 0
         for _ in range(9999):
-            if g.CELL_SIZE * i > g.PAGE_WIDTH: break
-            x_1 = page_x + g.CELL_SIZE * i
+            if g.GRID_CELL_SIZE * i > g.PAGE_WIDTH: break
+            x_1 = page_x + g.GRID_CELL_SIZE * i
             y_1 = page_y
-            x_2 = page_x + g.CELL_SIZE * i
+            x_2 = page_x + g.GRID_CELL_SIZE * i
             y_2 = page_y + g.PAGE_HEIGHT
             pygame.draw.line(screen, g.C_GRID, (int(x_1), y_1), (int(x_2), y_2), 2)
             i += 1  
         i = 0
         for _ in range(9999):
-            if g.CELL_SIZE * i > g.PAGE_HEIGHT: break
+            if g.GRID_CELL_SIZE * i > g.PAGE_HEIGHT: break
             x_1 = page_x
-            y_1 = page_y + g.CELL_SIZE * i
+            y_1 = page_y + g.GRID_CELL_SIZE * i
             x_2 = page_x + g.PAGE_WIDTH
-            y_2 = page_y + g.CELL_SIZE * i
+            y_2 = page_y + g.GRID_CELL_SIZE * i
             pygame.draw.line(screen, g.C_GRID, (x_1, int(y_1)), (x_2, int(y_2)), 2)
             i += 1
 
