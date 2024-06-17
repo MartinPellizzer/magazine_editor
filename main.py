@@ -8,44 +8,16 @@ from PIL import Image, ImageDraw, ImageFont
 import g
 import util
 import util_ai
+import mag
 
 page_x = g.WINDOW_WIDTH//2-g.PAGE_WIDTH//2
 page_y = g.WINDOW_HEIGHT//2-g.PAGE_HEIGHT//2
-
-body_font = ImageFont.truetype("assets/fonts/arial/ARIAL.TTF", g.BODY_FONT_SIZE)
-
 
 
 
 ####################################################################################################
 # FUNC
 ####################################################################################################
-def a4_draw_image(img, image_url):
-    col_i_x_1 = ''
-    col_i_y_1 = ''
-    col_i_x_2 = ''
-    col_i_y_2 = ''
-    is_first_pos = True
-    for row_i in range(grid_row_num):
-        for col_i in range(grid_col_num):
-            if grid_map[row_i][col_i] == 'i':
-                if is_first_pos: 
-                    col_i_x_1 = col_i
-                    col_i_y_1 = row_i
-                    is_first_pos = False
-                else:
-                    col_i_x_2 = col_i
-                    col_i_y_2 = row_i
-    if col_i_x_1 != '' and col_i_y_1 != '' and col_i_x_2 != '' and col_i_y_2 != '':
-        x_1 = int(a4_grid_col_w * col_i_x_1)
-        y_1 = int(a4_grid_row_h * col_i_y_1)
-        x_2 = int(a4_grid_col_w * (col_i_x_2 + 1))
-        y_2 = int(a4_grid_row_h * (col_i_y_2 + 1))
-        foreground = Image.open(image_url)
-        fg_w = x_2 - x_1
-        fg_h = y_2 - y_1
-        foreground = util.img_resize(foreground, fg_w, fg_h)
-        img.paste(foreground, (x_1, y_1))
 
 
 def a4_draw_title(draw):
@@ -53,8 +25,8 @@ def a4_draw_title(draw):
     title_font = ImageFont.truetype("assets/fonts/arial/ARIAL.TTF", g.TITLE_FONT_SIZE)
     title_col_i = ''
     title_row_i = ''
-    for row_i in range(grid_row_num):
-        for col_i in range(grid_col_num):
+    for row_i in range(g.GRID_ROW_NUM):
+        for col_i in range(g.GRID_COL_NUM):
             if grid_map[row_i][col_i] == 't':
                 title_col_i = col_i
                 title_row_i = row_i
@@ -75,8 +47,8 @@ def a4_draw_title_constrain(draw):
     row_i_1 = -1
     col_i_2 = -1
     row_i_2 = -1
-    for row_i in range(grid_row_num):
-        for col_i in range(grid_col_num):
+    for row_i in range(g.GRID_ROW_NUM):
+        for col_i in range(g.GRID_COL_NUM):
             if grid_map[row_i][col_i] == 't':
                 if col_i_1 == -1 and row_i_1 == -1:
                     col_i_1 = col_i
@@ -126,9 +98,9 @@ def a4_body_blocks():
         cols_i_list = [2, 6, 10]
     blocks_list = []
     block_curr = ['', '', '']
-    for col_i in range(grid_col_num):
+    for col_i in range(g.GRID_COL_NUM):
         if col_i in cols_i_list:
-            for row_i in range(grid_row_num):
+            for row_i in range(g.GRID_ROW_NUM):
                 if grid_map[row_i][col_i] == 'b':
                     if block_curr[0] == '': block_curr[0] = col_i
                     if block_curr[1] == '': block_curr[1] = row_i
@@ -235,7 +207,7 @@ for magazine_page_foldername in magazine_pages_foldernames:
     magazine_page_folderpath = f'{magazine_folderpath}/{magazine_page_foldername}'
     print(magazine_page_folderpath)
 
-    # data
+    # data    
     json_filepath = f'{magazine_page_folderpath}/data.json'
     with open(json_filepath, 'r', encoding='utf-8') as f: 
         data = json.load(f)
@@ -246,15 +218,22 @@ for magazine_page_foldername in magazine_pages_foldernames:
 
     study_journal = data['study_journal']
     study_abstract = data['study_abstract']
+    
     if 'body':
         key = 'body'
         # if key in data: del data[key]
         if key not in data:
             prompt = f'''
-                Scrivi in Italiano un articolo di 400 parole per una rivista scientifica di ozono utilizzando i dati del seguente studio: {study_abstract}
-                Inizia la risposta con queste parole: Secondo uno studio scientifico pubblicato dal {study_journal}, 
+                Scrivi in Italiano 5 paragrafi dettagliati usando i dati provenienti dall'abstract del seguente studio scientifico: {study_abstract}.
+
+                Nel paragrafo 1, scrivi l'introduzione in 400 parole.
+                Nel paragrafo 2, scrivi i metodi in 400 parole.
+                Nel paragrafo 3, scrivi i risultati in 400 parole.
+                Nel paragrafo 4, scrivi le discussioni in 400 parole.
+                Nel paragrafo 5, scrivi le conclusioni in 400 parole.
             '''
             reply = util_ai.gen_reply(prompt).strip()
+
             if reply != '':
                 print('*********************************************************')
                 print(reply)
@@ -262,54 +241,187 @@ for magazine_page_foldername in magazine_pages_foldernames:
                 data[key] = reply
                 util.json_write(json_filepath, data)
             time.sleep(g.SLEEP_TIME)
-        if key in data:
-            body = data['body'].replace('\n', ' ')
+
+
+    if 'body_large':
+        key = 'body_large'
+        # if key in data: del data[key]
+        if key not in data:
+            # data[key] = []
+            paragraphs = [
+"L'industria dei raffinatori di petrolio utilizza notevoli quantità di acqua e genera effluenti con un'elevata contaminazione organica che non possono essere trattati nei sistemi di trattamento convenzionali. A causa della rapida crescita di queste industrie e degli effetti avversi dei loro effluenti che entrano nell'ambiente, è necessario utilizzare metodi a basso costo e ad alta efficienza. Il trattamento dell'inquinamento organico dei rifiuti delle raffinerie e di altri effluenti pericolosi mediante processi di ossidazione avanzata è diventato comune, specialmente negli ultimi decenni. Il motivo di ciò è la distruzione completa o parziale dei contaminanti in un tempo di ritenzione molto breve e con costi accettabili. Questo studio ha indagato sull'eliminazione dell'inquinamento organico (COD) dei rifiuti delle raffinerie utilizzando il metodo di ozonazione integrata/fotchimica. L'obiettivo era quello di determinare l'influenza dei parametri principali sul processo di eliminazione del COD dei rifiuti.",
+"Per raggiungere l'obiettivo dello studio, sono stati condotti esperimenti di laboratorio per indagare l'influenza di quattro fattori principali, vale a dire l'importo iniziale di COD, l'input di ozono, il tempo di reazione e l'importo di catalizzatore, sull'efficienza di eliminazione del COD. Prima dell'esperimento principale, sono state eseguite prove preliminari per determinare i parametri giusti per l'esperimento. Per questo scopo, è stato utilizzato il metodo del disegno sperimentale della composizione centrale (CCD) per determinare i punti sperimentali. I dati di laboratorio sono stati quindi confrontati con l'output del modello, in modo da garantire una buona corrispondenza tra di loro. In seguito, l'ottimizzazione del processo è stata eseguita utilizzando il metodo RSM response procedure.",
+"I risultati dello studio hanno mostrato che i valori ottimali delle variabili indipendenti, vale a dire il pH, COD, O3 e TiO2, sono 11, 200 mg/L, 5 g/h e 200 mg/L, rispettivamente. In queste condizioni, l'efficienza di rimozione del COD è stata del 96,3% in 50 minuti. Inoltre, è stato osservato che i cambiamenti nel livello di COD e l'input di ozono hanno un effetto significativo sull'efficienza complessiva di rimozione del COD. I risultati hanno anche dimostrato che un aumento del livello di COD e dell'input di ozono aumenta l'efficienza di rimozione del COD. Tuttavia, un aumento del livello di catalizzatore non ha avuto alcun effetto significativo sull'efficienza di rimozione del COD.",
+"I risultati di questo studio hanno confermato che il metodo di ozonazione integrata/fotchimica può essere utilizzato con successo per trattare i rifiuti delle raffinerie e ridurre l'inquinamento organico. Tuttavia, i risultati hanno anche mostrato che l'efficienza del trattamento è fortemente dipendente dai livelli di COD e dall'input di ozono. Quindi, per garantire un'elevata efficienza di trattamento, è necessario mantenere i livelli di COD e l'input di ozono entro i limiti ottimali.",
+"In conclusione, questo studio ha mostrato che il metodo di ozonazione integrata/fotchimica è un metodo promettente per il trattamento dei rifiuti delle raffinerie e la riduzione dell'inquinamento organico. I risultati hanno anche dimostrato che l'efficienza del trattamento è influenzata dall'importo iniziale di COD e dall'input di ozono. Pertanto, è necessario mantenere i livelli di COD e l'input di ozono entro i limiti ottimali per garantire un'elevata efficienza di trattamento. Inoltre, è importante sottolineare che i dati ottenuti in questo studio sono derivati da esperimenti di laboratorio e devono essere confermati con ulteriori ricerche su scala più ampia. Infine, il metodo utilizzato in questo studio potrebbe essere utilizzato anche per il trattamento di altri tipi di effluenti industriali con una contaminazione organica simile.",
+            ]
+            for paragraph in paragraphs:
+                prompt = f'''
+                    Espandi il seguente paragrafo: {paragraph}.
+                '''
+                reply = util_ai.gen_reply(prompt).strip()
+
+                if reply != '':
+                    print('*********************************************************')
+                    print(reply)
+                    print('*********************************************************')
+                    data[key].append(reply)
+                    util.json_write(json_filepath, data)
+                time.sleep(g.SLEEP_TIME)
+
+#     if 'body':
+#         key = 'body'
+#         # if key in data: del data[key]
+#         if key not in data:
+#             data[key] = []
+#             sections = [
+#                 '''
+# I. Introduction
+#     A. Explanation of Near Surface Mounted Salt Indicators (NSMSIs)
+#     B. Importance of monitoring salt contamination in soil and water
+#                 ''',
+#                 '''
+# II. Methods
+#     A. Description of NSMSIs and their installation
+#     B. Explanation of the study area and duration
+#     C. Details of the data collection process
+#                 ''',
+#                 '''
+# III. Results
+#     A. Presentation of data on salt concentrations measured by NSMSIs
+#     B. Analysis of the correlation between NSMSIs measurements and traditional sampling methods
+#     C. Comparison of NSMSI performance in different soil and weather conditions
+#                 ''',
+#                 '''
+# IV. Discussion
+#     A. Interpretation of the results and their implications for soil and water contamination monitoring
+#     B. Evaluation of the NSMSIs' accuracy, reliability, and cost-effectiveness
+#     C. Discussion of the limitations and potential improvements of NSMSIs
+#                 ''',
+#                 '''
+# V. Conclusion
+#     A. Summary of the main findings
+#     B. Implications for future research and practical applications
+#     C. Significance of the study for environmental management and policy-making
+#                 ''',
+#             ]
+
+#             for section in sections:
+#                 prompt = f'''
+#                     Scrivi in Italiano un paragrafo dettagliato utilizzando la seguente outline e i dati dal seguente studio.
+#                     Outline: {section}
+#                     Studio: {study_abstract}
+#                 '''
+#                 reply = util_ai.gen_reply(prompt).strip()
+
+#                 if reply != '':
+#                     print('*********************************************************')
+#                     print(reply)
+#                     print('*********************************************************')
+#                     data[key].append(reply)
+#                     util.json_write(json_filepath, data)
+#                 time.sleep(g.SLEEP_TIME)
+            
+
+    # if 'body':
+    #     key = 'body'
+    #     if key in data: del data[key]
+    #     if key not in data:
+    #         outline = data['outline']
+    #         prompt = f'''
+    #             I want to write a detailed article for a scientific magazine. I'm going to give you an outline and the scientific study abstract. I want you to write a detailed paragraph for each chapter of the outline using the data from the scientific study abstract.
+    #             Here's the outline: {outline} 
+                                
+    #             Here's the scientific study abstract: {study_abstract}
+    #         '''
+    #         reply = util_ai.gen_reply(prompt).strip()
+    #         if reply != '':
+    #             print('*********************************************************')
+    #             print(reply)
+    #             print('*********************************************************')
+    #             data[key] = reply
+    #             util.json_write(json_filepath, data)
+    #         time.sleep(g.SLEEP_TIME)
 
     # template
-    with open(template_url, 'r', encoding='utf-8') as f: 
-        data_template = json.load(f)
-        
-    grid_map = data_template['grid_map']
+    grid_map = []
+    with open(template_url, "r") as f:
+        reader = csv.reader(f)
+        for i, line in enumerate(reader):
+            grid_map.append(line)
+            print(line)
 
-    # layout
-    grid_col_num = 16 
-    a4_grid_col_w = g.A4_WIDTH / grid_col_num
-
-    grid_row_num = 16 
-    a4_grid_row_h = g.A4_HEIGHT / grid_row_num
-
-    guides_col_num = data_template['col_num']
-    a4_guides_col_padding = a4_grid_col_w*4
-    a4_guides_col_gap = 16
-    a4_guides_col_w = (g.A4_WIDTH - a4_guides_col_padding) / guides_col_num
-
-    guides_row_num = 12
-    a4_guides_row_padding = a4_grid_row_h*4
-    a4_guides_row_h = (g.A4_HEIGHT - a4_guides_row_padding) / guides_row_num
-
-    page_grid_col_w = g.PAGE_WIDTH / grid_col_num
-    page_grid_row_h = g.PAGE_HEIGHT / grid_row_num
-
-    page_guides_col_padding = page_grid_col_w*4
-    page_guides_col_w = (g.PAGE_WIDTH - page_guides_col_padding) / guides_col_num
-
-    page_guides_row_padding = page_grid_row_h*4
-    page_guides_row_h = (g.PAGE_HEIGHT - page_guides_row_padding) / guides_row_num
+    for line in grid_map:
+        print(line)
 
 
     # magazine
     img = Image.new('RGB', (g.A4_WIDTH, g.A4_HEIGHT), color='white')
     draw = ImageDraw.Draw(img)
 
-    a4_draw_image(img, image_url)
-    a4_draw_title_constrain(draw)
+    mag.a4_draw_images(img, magazine_page_folderpath, grid_map)
 
-    blocks_list = a4_body_blocks()
+    text = ''
+    for paragraph in data['body_large']:
+        text += paragraph
+    text = text.replace('\n', ' ').strip()
 
-    if blocks_list != []:
-        text = body
-        lines = text_to_lines(text)
-        draw_body_justify(draw, lines, blocks_list)
+    paragraph_index = 0
+    for _ in range(5):
+        text = ''
+        for paragraph in data['body_large']:
+            text += paragraph
+        text = text.replace('\n', ' ').strip()
+        
+        is_under = mag.a4_draw_text_study(draw, text, grid_map, commit=False)
+
+        if is_under:
+            key = 'body_large'
+            paragraphs = [
+"L'industria dei raffinatori di petrolio utilizza notevoli quantità di acqua e genera effluenti con un'elevata contaminazione organica che non possono essere trattati nei sistemi di trattamento convenzionali. A causa della rapida crescita di queste industrie e degli effetti avversi dei loro effluenti che entrano nell'ambiente, è necessario utilizzare metodi a basso costo e ad alta efficienza. Il trattamento dell'inquinamento organico dei rifiuti delle raffinerie e di altri effluenti pericolosi mediante processi di ossidazione avanzata è diventato comune, specialmente negli ultimi decenni. Il motivo di ciò è la distruzione completa o parziale dei contaminanti in un tempo di ritenzione molto breve e con costi accettabili. Questo studio ha indagato sull'eliminazione dell'inquinamento organico (COD) dei rifiuti delle raffinerie utilizzando il metodo di ozonazione integrata/fotchimica. L'obiettivo era quello di determinare l'influenza dei parametri principali sul processo di eliminazione del COD dei rifiuti.",
+"Per raggiungere l'obiettivo dello studio, sono stati condotti esperimenti di laboratorio per indagare l'influenza di quattro fattori principali, vale a dire l'importo iniziale di COD, l'input di ozono, il tempo di reazione e l'importo di catalizzatore, sull'efficienza di eliminazione del COD. Prima dell'esperimento principale, sono state eseguite prove preliminari per determinare i parametri giusti per l'esperimento. Per questo scopo, è stato utilizzato il metodo del disegno sperimentale della composizione centrale (CCD) per determinare i punti sperimentali. I dati di laboratorio sono stati quindi confrontati con l'output del modello, in modo da garantire una buona corrispondenza tra di loro. In seguito, l'ottimizzazione del processo è stata eseguita utilizzando il metodo RSM response procedure.",
+"I risultati dello studio hanno mostrato che i valori ottimali delle variabili indipendenti, vale a dire il pH, COD, O3 e TiO2, sono 11, 200 mg/L, 5 g/h e 200 mg/L, rispettivamente. In queste condizioni, l'efficienza di rimozione del COD è stata del 96,3% in 50 minuti. Inoltre, è stato osservato che i cambiamenti nel livello di COD e l'input di ozono hanno un effetto significativo sull'efficienza complessiva di rimozione del COD. I risultati hanno anche dimostrato che un aumento del livello di COD e dell'input di ozono aumenta l'efficienza di rimozione del COD. Tuttavia, un aumento del livello di catalizzatore non ha avuto alcun effetto significativo sull'efficienza di rimozione del COD.",
+"I risultati di questo studio hanno confermato che il metodo di ozonazione integrata/fotchimica può essere utilizzato con successo per trattare i rifiuti delle raffinerie e ridurre l'inquinamento organico. Tuttavia, i risultati hanno anche mostrato che l'efficienza del trattamento è fortemente dipendente dai livelli di COD e dall'input di ozono. Quindi, per garantire un'elevata efficienza di trattamento, è necessario mantenere i livelli di COD e l'input di ozono entro i limiti ottimali.",
+"In conclusione, questo studio ha mostrato che il metodo di ozonazione integrata/fotchimica è un metodo promettente per il trattamento dei rifiuti delle raffinerie e la riduzione dell'inquinamento organico. I risultati hanno anche dimostrato che l'efficienza del trattamento è influenzata dall'importo iniziale di COD e dall'input di ozono. Pertanto, è necessario mantenere i livelli di COD e l'input di ozono entro i limiti ottimali per garantire un'elevata efficienza di trattamento. Inoltre, è importante sottolineare che i dati ottenuti in questo studio sono derivati da esperimenti di laboratorio e devono essere confermati con ulteriori ricerche su scala più ampia. Infine, il metodo utilizzato in questo studio potrebbe essere utilizzato anche per il trattamento di altri tipi di effluenti industriali con una contaminazione organica simile.",
+            ]
+            paragraph = paragraphs[paragraph_index]
+            prompt = f'''
+                Espandi di poco il seguente paragrafo: {paragraph}
+            '''
+            reply = util_ai.gen_reply(prompt).strip()
+            if reply != '':
+                print('*********************************************************')
+                print(reply)
+                print('*********************************************************')
+                data[key][paragraph_index] = reply
+                util.json_write(json_filepath, data)
+            time.sleep(g.SLEEP_TIME)
+            paragraph_index += 1
+        else:
+            break
+
+    body_to_draw = [item for item in data['body_large']]
+    body_small = data['body_small'].split('\n')
+    # print(len(body_to_draw))
+    # print(len(body_small))
+    # quit()
+    for i in range(len(body_to_draw)-1, 0, -1):
+        print(i)
+        if body_to_draw[i] != body_small[i]:
+            body_to_draw[i] = body_small[i]
+            break
+
+    text = ''
+    for paragraph in body_to_draw:
+        text += paragraph
+    text = text.replace('\n', ' ').strip()
+    mag.a4_draw_text_study(draw, text, grid_map, commit=True)
+
+
+    print(is_under)
+    
 
     export_url = data['export_url']
     img.save(export_url)
+
+    quit()

@@ -1,1 +1,5 @@
+- main: complete ai for text generation
+    - make body small a list and save it to json when cleaned
+    - adjust and refactor code to check if text is the right length (make the length as close as possible to the size of the give text blocks)
+    - maybe expand the middle text and not the intro and conclusions?
 - error if draw body on last column

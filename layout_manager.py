@@ -44,13 +44,10 @@ guide_sizes = [62, 71, 83, 99, 124, 165, 248]
 guide_size_index = 0
 guide_size = guide_sizes[guide_size_index]
 
-grid_col_num = int(g.PAGE_WIDTH / g.GRID_CELL_SIZE)
-grid_row_num = int(g.PAGE_HEIGHT / g.GRID_CELL_SIZE) + 1
-
 grid_map = []
-for row_i in range(grid_row_num):
+for row_i in range(g.GRID_ROW_NUM):
     row_curr = []
-    for col_i in range(grid_col_num):
+    for col_i in range(g.GRID_COL_NUM):
         row_curr.append('')
     grid_map.append(row_curr)
 
@@ -71,15 +68,15 @@ month_folder = f'{yyyy}_{mm}'
 # A4
 ####################################################################################################
 
-def a4_draw_image(img):
+def a4_draw_images(img):
     for i in range(10):
         col_i_x_1 = ''
         col_i_y_1 = ''
         col_i_x_2 = ''
         col_i_y_2 = ''
         is_first_pos = True
-        for row_i in range(grid_row_num):
-            for col_i in range(grid_col_num):
+        for row_i in range(g.GRID_ROW_NUM):
+            for col_i in range(g.GRID_COL_NUM):
                 if f'i_{i}' in grid_map[row_i][col_i]:
                     if is_first_pos: 
                         col_i_x_1 = col_i
@@ -102,8 +99,8 @@ def a4_draw_image(img):
 
 
 def a4_draw_dark(draw):
-    for row_i in range(grid_row_num):
-        for col_i in range(grid_col_num):
+    for row_i in range(g.GRID_ROW_NUM):
+        for col_i in range(g.GRID_COL_NUM):
             if 'd' in grid_map[row_i][col_i]:
                 x_1 = g.A4_CELL_SIZE * col_i
                 y_1 = g.A4_CELL_SIZE * row_i
@@ -123,8 +120,8 @@ def a4_draw_title(draw):
     row_i_1 = -1
     col_i_2 = -1
     row_i_2 = -1
-    for row_i in range(grid_row_num):
-        for col_i in range(grid_col_num):
+    for row_i in range(g.GRID_ROW_NUM):
+        for col_i in range(g.GRID_COL_NUM):
             if 't' in grid_map[row_i][col_i]:
                 if col_i_1 == -1 and row_i_1 == -1:
                     col_i_1 = col_i
@@ -166,20 +163,20 @@ def a4_draw_text(draw):
     text = g.PLACEHOLDER_TEXT.replace('\n', '').strip()
 
     done_grid_map = []
-    for row_i in range(grid_row_num):
+    for row_i in range(g.GRID_ROW_NUM):
         row_curr = []
-        for col_i in range(grid_col_num):
+        for col_i in range(g.GRID_COL_NUM):
             row_curr.append('')
         done_grid_map.append(row_curr)
         
     lines_coord = []
-    for col_i in range(grid_col_num):
-        for row_i in range(grid_row_num):
+    for col_i in range(g.GRID_COL_NUM):
+        for row_i in range(g.GRID_ROW_NUM):
             if 'b' in grid_map[row_i][col_i]:
                 if done_grid_map[row_i][col_i] != 'b':
                     done_grid_map[row_i][col_i] = 'b'
                     tmp_line_coord = []
-                    for next_col_i in range(col_i, grid_col_num):
+                    for next_col_i in range(col_i, g.GRID_COL_NUM):
                         if 'b' in grid_map[row_i][next_col_i]:
                             done_grid_map[row_i][next_col_i] = 'b'
                             tmp_line_coord = [row_i, col_i, row_i, next_col_i+1]
@@ -241,7 +238,7 @@ def a4_template_preview():
         mag.a4_draw_grid(draw)
         mag.a4_draw_guides(draw, guide_size)
 
-    a4_draw_image(img)
+    a4_draw_images(img)
     a4_draw_dark(draw)
     a4_draw_title(draw)
     a4_draw_text(draw)
@@ -274,7 +271,7 @@ def a4_template_save():
     if flag_a4_grid:
         mag.a4_draw_grid(draw)
         mag.a4_draw_guides(draw, guide_size)
-    a4_draw_image(img)
+    a4_draw_images(img)
     a4_draw_dark(draw)
     a4_draw_title(draw)
     a4_draw_text(draw)
@@ -291,9 +288,9 @@ def a4_template_save():
 
 def grid_map_copy():
     tmp = []
-    for row_i in range(grid_row_num):
+    for row_i in range(g.GRID_ROW_NUM):
         row_curr = []
-        for col_i in range(grid_col_num):
+        for col_i in range(g.GRID_COL_NUM):
             row_curr.append(grid_map[row_i][col_i])
         tmp.append(row_curr)
     return tmp
@@ -342,8 +339,8 @@ while True:
             drag_c_2 = int((drag_x_2 - page_x) // g.GRID_CELL_SIZE)
             drag_r_2 = int((drag_y_2 - page_y) // g.GRID_CELL_SIZE)
 
-            for row_i in range(grid_row_num):
-                for col_i in range(grid_col_num):
+            for row_i in range(g.GRID_ROW_NUM):
+                for col_i in range(g.GRID_COL_NUM):
                     if (row_i >= drag_r_1 and row_i <= drag_r_2 and 
                         col_i >= drag_c_1 and col_i <= drag_c_2):
 
@@ -401,8 +398,8 @@ while True:
             drag_c_2 = int((drag_x_2 - page_x) // g.GRID_CELL_SIZE)
             drag_r_2 = int((drag_y_2 - page_y) // g.GRID_CELL_SIZE)
 
-            for row_i in range(grid_row_num):
-                for col_i in range(grid_col_num):
+            for row_i in range(g.GRID_ROW_NUM):
+                for col_i in range(g.GRID_COL_NUM):
                     if (row_i >= drag_r_1 and row_i <= drag_r_2 and 
                         col_i >= drag_c_1 and col_i <= drag_c_2):
 
@@ -488,8 +485,8 @@ while True:
     screen.blit(text_surface, (0, 240))
 
     
-    for row_i in range(grid_row_num):
-        for col_i in range(grid_col_num):
+    for row_i in range(g.GRID_ROW_NUM):
+        for col_i in range(g.GRID_COL_NUM):
             
             if 'i_1' in tmp_grid_map[row_i][col_i]:
                 red_x_1 = page_x + g.GRID_CELL_SIZE * col_i
@@ -571,6 +568,16 @@ while True:
             y_1 = page_y
             x_2 = page_x + guide_size * i
             y_2 = page_y + g.PAGE_HEIGHT
+            pygame.draw.line(screen, g.C_GUIDE, (int(x_1), y_1), (int(x_2), y_2), 2)
+            i += 1
+
+        i = 0
+        for _ in range(9999):
+            if guide_size * i > g.PAGE_HEIGHT: break
+            x_1 = page_x
+            y_1 = page_y + guide_size * i
+            x_2 = page_x + g.PAGE_WIDTH
+            y_2 = page_y + guide_size * i
             pygame.draw.line(screen, g.C_GUIDE, (int(x_1), y_1), (int(x_2), y_2), 2)
             i += 1
 

@@ -25,6 +25,8 @@ def gen_reply(prompt):
         ],
         model="mixtral-8x7b-32768",
         # model="llama3-70b-8192",
+        temperature=1,
+        max_tokens=2048,
     )
 
     reply = completion.choices[0].message.content
