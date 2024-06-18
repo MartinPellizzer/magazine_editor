@@ -57,12 +57,8 @@ def a4_draw_title_constrain(draw):
                     col_i_2 = col_i
                     row_i_2 = row_i
 
-    # print(col_i_1, row_i_1)
-    # print(col_i_2, row_i_2)
-
     title_available_w = (col_i_2 - col_i_1 + 1) * a4_grid_col_w
     title_available_h = (row_i_2 - row_i_1 + 1) * a4_grid_row_h
-    # print(title_available_w)
 
     lines = title.split('\n')
     line_longest = ''
@@ -195,6 +191,92 @@ def draw_body_justify(draw, lines, blocks_list):
         line_i += 1
 
 
+# TODO: function dark backgroud for white text
+def draw_dark():
+    pass
+
+
+
+####################################################################################################
+# AI
+####################################################################################################
+
+def ai_body_small(json_filepath, data):
+    key = 'body_small'
+    # if key in data: del data[key]
+    if key not in data:
+        prompt = f'''
+            Scrivi in Italiano 5 paragrafi brevi dettagliati usando i dati provenienti dall'abstract del seguente studio scientifico: {study_abstract}.
+
+            Nel paragrafo 1, scrivi l'introduzione in 100 parole.
+            Nel paragrafo 2, scrivi i metodi in 100 parole.
+            Nel paragrafo 3, scrivi i risultati in 100 parole.
+            Nel paragrafo 4, scrivi le discussioni in 100 parole.
+            Nel paragrafo 5, scrivi le conclusioni in 100 parole.
+
+            Per i paragrafi usa i seguenti titoli: Paragrafo 1, Paragrafo 2, Paragrafo 3, Paragrafo 4, Paragrafo 5.
+        '''
+        reply = util_ai.gen_reply(prompt).strip()
+
+        lines = reply.split('\n')
+        paragraphs = []
+        paragraph_curr = ''
+        for line in lines:
+            # print(line)
+            line = line.strip()
+            if line.lower().startswith('paragrafo'):
+                if paragraph_curr != '':
+                    paragraphs.append(paragraph_curr)
+                    paragraph_curr = ''
+            else:
+                paragraph_curr += line
+        if paragraph_curr != '':
+            paragraphs.append(paragraph_curr)
+
+        if len(paragraphs) == 5:
+            print('*********************************************************')
+            print(paragraphs)
+            print('*********************************************************')
+            data[key] = paragraphs
+            util.json_write(json_filepath, data)
+        time.sleep(g.SLEEP_TIME)
+
+
+def ai_body_large(json_filepath, data):
+    key = 'body_large'
+    # if key in data: del data[key]
+    if key not in data:
+        data[key] = []
+        paragraphs = data['body_small']
+        for paragraph in paragraphs:
+            good_prompt = False
+            while not good_prompt:
+                # prompt = f'''
+                #     Riscrivi il seguente paragrafo rendendolo di poco più lungo: {paragraph}
+                #     Rispondi in meno di 150 parole.
+                #     Rispondi in 1 paragrafo.
+                #     Non scrivere liste.
+                # '''
+                prompt = f'''
+                    Scrivi 1 paragrafo dettagliato usando i seguenti dati: {paragraph}
+                    
+                    Rispondi in meno di 150 parole.
+                    Rispondi in 1 paragrafo.
+                    Non scrivere liste.
+                '''
+                reply = util_ai.gen_reply(prompt).strip()
+
+                words_num = len(reply.split(" "))
+                print(f'num words text = {words_num}')
+                if reply != '' and words_num < 200:
+                    print('*********************************************************')
+                    print(reply)
+                    print('*********************************************************')
+                    data[key].append(reply)
+                    util.json_write(json_filepath, data)
+                    good_prompt = True
+                time.sleep(g.SLEEP_TIME)
+
 
 
 ####################################################################################################
@@ -218,142 +300,16 @@ for magazine_page_foldername in magazine_pages_foldernames:
 
     study_journal = data['study_journal']
     study_abstract = data['study_abstract']
+
+    ai_body_small(json_filepath, data)
+    ai_body_large(json_filepath, data)
     
-    if 'body':
-        key = 'body'
-        # if key in data: del data[key]
-        if key not in data:
-            prompt = f'''
-                Scrivi in Italiano 5 paragrafi dettagliati usando i dati provenienti dall'abstract del seguente studio scientifico: {study_abstract}.
-
-                Nel paragrafo 1, scrivi l'introduzione in 400 parole.
-                Nel paragrafo 2, scrivi i metodi in 400 parole.
-                Nel paragrafo 3, scrivi i risultati in 400 parole.
-                Nel paragrafo 4, scrivi le discussioni in 400 parole.
-                Nel paragrafo 5, scrivi le conclusioni in 400 parole.
-            '''
-            reply = util_ai.gen_reply(prompt).strip()
-
-            if reply != '':
-                print('*********************************************************')
-                print(reply)
-                print('*********************************************************')
-                data[key] = reply
-                util.json_write(json_filepath, data)
-            time.sleep(g.SLEEP_TIME)
-
-
-    if 'body_large':
-        key = 'body_large'
-        # if key in data: del data[key]
-        if key not in data:
-            # data[key] = []
-            paragraphs = [
-"L'industria dei raffinatori di petrolio utilizza notevoli quantità di acqua e genera effluenti con un'elevata contaminazione organica che non possono essere trattati nei sistemi di trattamento convenzionali. A causa della rapida crescita di queste industrie e degli effetti avversi dei loro effluenti che entrano nell'ambiente, è necessario utilizzare metodi a basso costo e ad alta efficienza. Il trattamento dell'inquinamento organico dei rifiuti delle raffinerie e di altri effluenti pericolosi mediante processi di ossidazione avanzata è diventato comune, specialmente negli ultimi decenni. Il motivo di ciò è la distruzione completa o parziale dei contaminanti in un tempo di ritenzione molto breve e con costi accettabili. Questo studio ha indagato sull'eliminazione dell'inquinamento organico (COD) dei rifiuti delle raffinerie utilizzando il metodo di ozonazione integrata/fotchimica. L'obiettivo era quello di determinare l'influenza dei parametri principali sul processo di eliminazione del COD dei rifiuti.",
-"Per raggiungere l'obiettivo dello studio, sono stati condotti esperimenti di laboratorio per indagare l'influenza di quattro fattori principali, vale a dire l'importo iniziale di COD, l'input di ozono, il tempo di reazione e l'importo di catalizzatore, sull'efficienza di eliminazione del COD. Prima dell'esperimento principale, sono state eseguite prove preliminari per determinare i parametri giusti per l'esperimento. Per questo scopo, è stato utilizzato il metodo del disegno sperimentale della composizione centrale (CCD) per determinare i punti sperimentali. I dati di laboratorio sono stati quindi confrontati con l'output del modello, in modo da garantire una buona corrispondenza tra di loro. In seguito, l'ottimizzazione del processo è stata eseguita utilizzando il metodo RSM response procedure.",
-"I risultati dello studio hanno mostrato che i valori ottimali delle variabili indipendenti, vale a dire il pH, COD, O3 e TiO2, sono 11, 200 mg/L, 5 g/h e 200 mg/L, rispettivamente. In queste condizioni, l'efficienza di rimozione del COD è stata del 96,3% in 50 minuti. Inoltre, è stato osservato che i cambiamenti nel livello di COD e l'input di ozono hanno un effetto significativo sull'efficienza complessiva di rimozione del COD. I risultati hanno anche dimostrato che un aumento del livello di COD e dell'input di ozono aumenta l'efficienza di rimozione del COD. Tuttavia, un aumento del livello di catalizzatore non ha avuto alcun effetto significativo sull'efficienza di rimozione del COD.",
-"I risultati di questo studio hanno confermato che il metodo di ozonazione integrata/fotchimica può essere utilizzato con successo per trattare i rifiuti delle raffinerie e ridurre l'inquinamento organico. Tuttavia, i risultati hanno anche mostrato che l'efficienza del trattamento è fortemente dipendente dai livelli di COD e dall'input di ozono. Quindi, per garantire un'elevata efficienza di trattamento, è necessario mantenere i livelli di COD e l'input di ozono entro i limiti ottimali.",
-"In conclusione, questo studio ha mostrato che il metodo di ozonazione integrata/fotchimica è un metodo promettente per il trattamento dei rifiuti delle raffinerie e la riduzione dell'inquinamento organico. I risultati hanno anche dimostrato che l'efficienza del trattamento è influenzata dall'importo iniziale di COD e dall'input di ozono. Pertanto, è necessario mantenere i livelli di COD e l'input di ozono entro i limiti ottimali per garantire un'elevata efficienza di trattamento. Inoltre, è importante sottolineare che i dati ottenuti in questo studio sono derivati da esperimenti di laboratorio e devono essere confermati con ulteriori ricerche su scala più ampia. Infine, il metodo utilizzato in questo studio potrebbe essere utilizzato anche per il trattamento di altri tipi di effluenti industriali con una contaminazione organica simile.",
-            ]
-            for paragraph in paragraphs:
-                prompt = f'''
-                    Espandi il seguente paragrafo: {paragraph}.
-                '''
-                reply = util_ai.gen_reply(prompt).strip()
-
-                if reply != '':
-                    print('*********************************************************')
-                    print(reply)
-                    print('*********************************************************')
-                    data[key].append(reply)
-                    util.json_write(json_filepath, data)
-                time.sleep(g.SLEEP_TIME)
-
-#     if 'body':
-#         key = 'body'
-#         # if key in data: del data[key]
-#         if key not in data:
-#             data[key] = []
-#             sections = [
-#                 '''
-# I. Introduction
-#     A. Explanation of Near Surface Mounted Salt Indicators (NSMSIs)
-#     B. Importance of monitoring salt contamination in soil and water
-#                 ''',
-#                 '''
-# II. Methods
-#     A. Description of NSMSIs and their installation
-#     B. Explanation of the study area and duration
-#     C. Details of the data collection process
-#                 ''',
-#                 '''
-# III. Results
-#     A. Presentation of data on salt concentrations measured by NSMSIs
-#     B. Analysis of the correlation between NSMSIs measurements and traditional sampling methods
-#     C. Comparison of NSMSI performance in different soil and weather conditions
-#                 ''',
-#                 '''
-# IV. Discussion
-#     A. Interpretation of the results and their implications for soil and water contamination monitoring
-#     B. Evaluation of the NSMSIs' accuracy, reliability, and cost-effectiveness
-#     C. Discussion of the limitations and potential improvements of NSMSIs
-#                 ''',
-#                 '''
-# V. Conclusion
-#     A. Summary of the main findings
-#     B. Implications for future research and practical applications
-#     C. Significance of the study for environmental management and policy-making
-#                 ''',
-#             ]
-
-#             for section in sections:
-#                 prompt = f'''
-#                     Scrivi in Italiano un paragrafo dettagliato utilizzando la seguente outline e i dati dal seguente studio.
-#                     Outline: {section}
-#                     Studio: {study_abstract}
-#                 '''
-#                 reply = util_ai.gen_reply(prompt).strip()
-
-#                 if reply != '':
-#                     print('*********************************************************')
-#                     print(reply)
-#                     print('*********************************************************')
-#                     data[key].append(reply)
-#                     util.json_write(json_filepath, data)
-#                 time.sleep(g.SLEEP_TIME)
-            
-
-    # if 'body':
-    #     key = 'body'
-    #     if key in data: del data[key]
-    #     if key not in data:
-    #         outline = data['outline']
-    #         prompt = f'''
-    #             I want to write a detailed article for a scientific magazine. I'm going to give you an outline and the scientific study abstract. I want you to write a detailed paragraph for each chapter of the outline using the data from the scientific study abstract.
-    #             Here's the outline: {outline} 
-                                
-    #             Here's the scientific study abstract: {study_abstract}
-    #         '''
-    #         reply = util_ai.gen_reply(prompt).strip()
-    #         if reply != '':
-    #             print('*********************************************************')
-    #             print(reply)
-    #             print('*********************************************************')
-    #             data[key] = reply
-    #             util.json_write(json_filepath, data)
-    #         time.sleep(g.SLEEP_TIME)
-
     # template
     grid_map = []
     with open(template_url, "r") as f:
         reader = csv.reader(f)
         for i, line in enumerate(reader):
             grid_map.append(line)
-            print(line)
-
-    for line in grid_map:
-        print(line)
-
 
     # magazine
     img = Image.new('RGB', (g.A4_WIDTH, g.A4_HEIGHT), color='white')
@@ -361,67 +317,45 @@ for magazine_page_foldername in magazine_pages_foldernames:
 
     mag.a4_draw_images(img, magazine_page_folderpath, grid_map)
 
+    paragraphs_body_small = [paragraph.replace('\n', ' ').strip() for paragraph in data['body_small']]
+    paragraphs_body_large = [paragraph.replace('\n', ' ').strip() for paragraph in data['body_large']]
+
     text = ''
-    for paragraph in data['body_large']:
-        text += paragraph
-    text = text.replace('\n', ' ').strip()
+    paragraphs = [paragraph for paragraph in paragraphs_body_small]
 
     paragraph_index = 0
     for _ in range(5):
-        text = ''
-        for paragraph in data['body_large']:
-            text += paragraph
-        text = text.replace('\n', ' ').strip()
-        
+        text = ' '.join(paragraphs)
+
         is_under = mag.a4_draw_text_study(draw, text, grid_map, commit=False)
 
         if is_under:
-            key = 'body_large'
-            paragraphs = [
-"L'industria dei raffinatori di petrolio utilizza notevoli quantità di acqua e genera effluenti con un'elevata contaminazione organica che non possono essere trattati nei sistemi di trattamento convenzionali. A causa della rapida crescita di queste industrie e degli effetti avversi dei loro effluenti che entrano nell'ambiente, è necessario utilizzare metodi a basso costo e ad alta efficienza. Il trattamento dell'inquinamento organico dei rifiuti delle raffinerie e di altri effluenti pericolosi mediante processi di ossidazione avanzata è diventato comune, specialmente negli ultimi decenni. Il motivo di ciò è la distruzione completa o parziale dei contaminanti in un tempo di ritenzione molto breve e con costi accettabili. Questo studio ha indagato sull'eliminazione dell'inquinamento organico (COD) dei rifiuti delle raffinerie utilizzando il metodo di ozonazione integrata/fotchimica. L'obiettivo era quello di determinare l'influenza dei parametri principali sul processo di eliminazione del COD dei rifiuti.",
-"Per raggiungere l'obiettivo dello studio, sono stati condotti esperimenti di laboratorio per indagare l'influenza di quattro fattori principali, vale a dire l'importo iniziale di COD, l'input di ozono, il tempo di reazione e l'importo di catalizzatore, sull'efficienza di eliminazione del COD. Prima dell'esperimento principale, sono state eseguite prove preliminari per determinare i parametri giusti per l'esperimento. Per questo scopo, è stato utilizzato il metodo del disegno sperimentale della composizione centrale (CCD) per determinare i punti sperimentali. I dati di laboratorio sono stati quindi confrontati con l'output del modello, in modo da garantire una buona corrispondenza tra di loro. In seguito, l'ottimizzazione del processo è stata eseguita utilizzando il metodo RSM response procedure.",
-"I risultati dello studio hanno mostrato che i valori ottimali delle variabili indipendenti, vale a dire il pH, COD, O3 e TiO2, sono 11, 200 mg/L, 5 g/h e 200 mg/L, rispettivamente. In queste condizioni, l'efficienza di rimozione del COD è stata del 96,3% in 50 minuti. Inoltre, è stato osservato che i cambiamenti nel livello di COD e l'input di ozono hanno un effetto significativo sull'efficienza complessiva di rimozione del COD. I risultati hanno anche dimostrato che un aumento del livello di COD e dell'input di ozono aumenta l'efficienza di rimozione del COD. Tuttavia, un aumento del livello di catalizzatore non ha avuto alcun effetto significativo sull'efficienza di rimozione del COD.",
-"I risultati di questo studio hanno confermato che il metodo di ozonazione integrata/fotchimica può essere utilizzato con successo per trattare i rifiuti delle raffinerie e ridurre l'inquinamento organico. Tuttavia, i risultati hanno anche mostrato che l'efficienza del trattamento è fortemente dipendente dai livelli di COD e dall'input di ozono. Quindi, per garantire un'elevata efficienza di trattamento, è necessario mantenere i livelli di COD e l'input di ozono entro i limiti ottimali.",
-"In conclusione, questo studio ha mostrato che il metodo di ozonazione integrata/fotchimica è un metodo promettente per il trattamento dei rifiuti delle raffinerie e la riduzione dell'inquinamento organico. I risultati hanno anche dimostrato che l'efficienza del trattamento è influenzata dall'importo iniziale di COD e dall'input di ozono. Pertanto, è necessario mantenere i livelli di COD e l'input di ozono entro i limiti ottimali per garantire un'elevata efficienza di trattamento. Inoltre, è importante sottolineare che i dati ottenuti in questo studio sono derivati da esperimenti di laboratorio e devono essere confermati con ulteriori ricerche su scala più ampia. Infine, il metodo utilizzato in questo studio potrebbe essere utilizzato anche per il trattamento di altri tipi di effluenti industriali con una contaminazione organica simile.",
-            ]
-            paragraph = paragraphs[paragraph_index]
-            prompt = f'''
-                Espandi di poco il seguente paragrafo: {paragraph}
-            '''
-            reply = util_ai.gen_reply(prompt).strip()
-            if reply != '':
-                print('*********************************************************')
-                print(reply)
-                print('*********************************************************')
-                data[key][paragraph_index] = reply
-                util.json_write(json_filepath, data)
-            time.sleep(g.SLEEP_TIME)
-            paragraph_index += 1
-        else:
-            break
+            # if paragraph_index != 0 and paragraph_index != 5-1:
+            paragraphs[paragraph_index] = paragraphs_body_large[paragraph_index]
+        else: break
+        
+        paragraph_index += 1
+        print(paragraph_index)
 
-    body_to_draw = [item for item in data['body_large']]
-    body_small = data['body_small'].split('\n')
-    # print(len(body_to_draw))
-    # print(len(body_small))
-    # quit()
-    for i in range(len(body_to_draw)-1, 0, -1):
-        print(i)
-        if body_to_draw[i] != body_small[i]:
-            body_to_draw[i] = body_small[i]
-            break
+    # print(paragraph_index-1)
+    # print(paragraphs[paragraph_index-1])
+    # print()
+    # print(paragraphs_body_small[paragraph_index-1])
+    paragraphs[paragraph_index-1] = paragraphs_body_small[paragraph_index-1]
 
-    text = ''
-    for paragraph in body_to_draw:
-        text += paragraph
-    text = text.replace('\n', ' ').strip()
+
+    # TODO: ottimizza scelta paragrafi per riempire i buchi
+        # Scorri il primo array (small) x numero volte di elementi del secondo array (large)
+        # in un singolo scorrimento, sostituisci uno alla volta gli elementi in small con large
+        # ogni nuovo scorrimento, comincia a scorre da un elemento in avanti e i precedenti mettili tutti a large
+    for paragraph in paragraphs:
+        print(paragraph)
+        print()
+
+    text = ' '.join(paragraphs)
     mag.a4_draw_text_study(draw, text, grid_map, commit=True)
-
-
-    print(is_under)
-    
 
     export_url = data['export_url']
     img.save(export_url)
 
-    quit()
+    # quit()

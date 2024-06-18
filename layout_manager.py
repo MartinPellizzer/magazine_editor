@@ -133,9 +133,9 @@ def a4_draw_title(draw):
     title_available_w = (col_i_2 - col_i_1 + 1) * g.A4_CELL_SIZE
     title_available_h = (row_i_2 - row_i_1 + 1) * g.A4_CELL_SIZE
 
-    title = 'Nature\'s Wonderland'
-    title = 'This is a title'
-    title = 'How to sanitize poultry\nmeat with ozone'
+    title = 'Nature\'s\nWonderland'
+    # title = 'This is a title'
+    # title = 'How to sanitize poultry\nmeat with ozone'
 
     lines = title.split('\n')
     line_longest = ''
