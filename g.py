@@ -12,7 +12,7 @@ with open('placeholder_text.txt', 'r', encoding='utf-8', errors='ignore') as f:
 
 
 
-BODY_FONT_SIZE = 30
+BODY_FONT_SIZE = 36
 TITLE_FONT_SIZE = 200
 
 A4_WIDTH = 2480

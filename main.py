@@ -84,113 +84,6 @@ def a4_draw_title_constrain(draw):
         draw.text((x_1, y_1), title, (0, 0, 0), font=title_font)
 
 
-def a4_body_blocks():
-    cols_i_list = []
-    if guides_col_num == 1:
-        cols_i_list = [2]
-    elif guides_col_num == 2:
-        cols_i_list = [2, 8]
-    elif guides_col_num == 3:
-        cols_i_list = [2, 6, 10]
-    blocks_list = []
-    block_curr = ['', '', '']
-    for col_i in range(g.GRID_COL_NUM):
-        if col_i in cols_i_list:
-            for row_i in range(g.GRID_ROW_NUM):
-                if grid_map[row_i][col_i] == 'b':
-                    if block_curr[0] == '': block_curr[0] = col_i
-                    if block_curr[1] == '': block_curr[1] = row_i
-                elif grid_map[row_i][col_i] != 'b':
-                    if block_curr != ['', '', '']:
-                        if block_curr[2] == '': block_curr[2] = row_i
-                        blocks_list.append(block_curr)
-                        block_curr = ['', '', '']
-            if block_curr != ['', '', '']:
-                if block_curr[2] == '': block_curr[2] = row_i
-                blocks_list.append(block_curr)
-                block_curr = block_curr = ['', '', '']
-    return blocks_list
-
-
-def text_to_lines(text):
-    words = text.split(' ')
-    lines = []
-    line_curr = ''
-    for word in words:
-        _, _, line_curr_w, _ = body_font.getbbox(line_curr)
-        _, _, word_w, _ = body_font.getbbox(word)
-        if line_curr_w + word_w < a4_guides_col_w - a4_guides_col_gap*2:
-            line_curr += f'{word} '
-        else:
-            lines.append(line_curr.strip())
-            line_curr = f'{word} '
-    lines.append(line_curr)
-    return lines
-
-
-def draw_body(draw, lines, blocks_list):
-    block_i = 0
-    start_col_i = blocks_list[block_i][0]
-    start_row_i = blocks_list[block_i][1]
-    end_row_i = blocks_list[block_i][2]
-    line_i = 0
-    for line in lines:
-        x_1 = a4_grid_col_w * start_col_i + a4_guides_col_gap * ((start_col_i-2)//4)
-        y_1 = a4_grid_row_h * start_row_i + g.BODY_FONT_SIZE * line_i
-        line_row_i = y_1 // a4_guides_row_h
-        if line_row_i > end_row_i - 1: 
-            block_i += 1
-            if block_i < len(blocks_list):
-                start_col_i = blocks_list[block_i][0]
-                start_row_i = blocks_list[block_i][1]
-                end_row_i = blocks_list[block_i][2]
-                line_i = 0
-                x_1 = a4_grid_col_w * start_col_i + a4_guides_col_gap * ((start_col_i-2)//4)
-                y_1 = a4_grid_row_h * start_row_i + g.BODY_FONT_SIZE * line_i
-            else:
-                break
-                
-        draw.text((x_1, y_1), line, (0, 0, 0), font=body_font)
-        line_i += 1
-
-
-def draw_body_justify(draw, lines, blocks_list):
-    block_i = 0
-    start_col_i = blocks_list[block_i][0]
-    start_row_i = blocks_list[block_i][1]
-    end_row_i = blocks_list[block_i][2]
-    line_i = 0
-    lines_num = len(lines)
-    for i, line in enumerate(lines):
-        x_1 = a4_grid_col_w * start_col_i + a4_guides_col_gap * ((start_col_i-2)//4)
-        y_1 = a4_grid_row_h * start_row_i + g.BODY_FONT_SIZE * line_i
-        line_row_i = y_1 // a4_guides_row_h
-        if line_row_i > end_row_i - 1: 
-            block_i += 1
-            if block_i < len(blocks_list):
-                start_col_i = blocks_list[block_i][0]
-                start_row_i = blocks_list[block_i][1]
-                end_row_i = blocks_list[block_i][2]
-                line_i = 0
-                x_1 = a4_grid_col_w * start_col_i + a4_guides_col_gap * ((start_col_i-2)//4)
-                y_1 = a4_grid_row_h * start_row_i + g.BODY_FONT_SIZE * line_i
-            else:
-                break
-
-        if i != lines_num - 1:
-            words = line.split(" ")
-            words_length = sum(draw.textlength(w, font=body_font) for w in words)
-            space_length = ((a4_guides_col_w - a4_guides_col_gap*2) - words_length) / (len(words) - 1)
-            x = x_1
-            for word in words:
-                draw.text((x, y_1), word, font=body_font, fill="black")
-                x += draw.textlength(word, font=body_font) + space_length
-        else:
-            draw.text((x_1, y_1), line, font=body_font, fill="black")
-
-        line_i += 1
-
-
 # TODO: function dark backgroud for white text
 def draw_dark():
     pass
@@ -294,16 +187,19 @@ for magazine_page_foldername in magazine_pages_foldernames:
     with open(json_filepath, 'r', encoding='utf-8') as f: 
         data = json.load(f)
 
-
-    template_url = data['template_url']
-    image_url = data['image_url']
-
+    # GENERATE ARTICLE "CHUNKS"
     study_journal = data['study_journal']
     study_abstract = data['study_abstract']
 
     ai_body_small(json_filepath, data)
     ai_body_large(json_filepath, data)
+
+    template_url = data['template_url']
+    print(template_url)
     
+    # TODO: remve or manage log of page without template
+    if not os.path.exists(template_url): continue
+
     # template
     grid_map = []
     with open(template_url, "r") as f:
@@ -315,7 +211,10 @@ for magazine_page_foldername in magazine_pages_foldernames:
     img = Image.new('RGB', (g.A4_WIDTH, g.A4_HEIGHT), color='white')
     draw = ImageDraw.Draw(img)
 
-    mag.a4_draw_images(img, magazine_page_folderpath, grid_map)
+    # mag.a4_draw_grid(draw)
+
+    try: mag.a4_draw_images(img, magazine_page_folderpath, grid_map)
+    except: pass
 
     paragraphs_body_small = [paragraph.replace('\n', ' ').strip() for paragraph in data['body_small']]
     paragraphs_body_large = [paragraph.replace('\n', ' ').strip() for paragraph in data['body_large']]
@@ -325,22 +224,15 @@ for magazine_page_foldername in magazine_pages_foldernames:
 
     paragraph_index = 0
     for _ in range(5):
-        text = ' '.join(paragraphs)
+        text = '\n'.join(paragraphs)
 
-        is_under = mag.a4_draw_text_study(draw, text, grid_map, commit=False)
+        is_under = mag.a4_draw_text_study_2(draw, text, grid_map, commit=False)
 
-        if is_under:
-            # if paragraph_index != 0 and paragraph_index != 5-1:
-            paragraphs[paragraph_index] = paragraphs_body_large[paragraph_index]
+        if is_under: paragraphs[paragraph_index] = paragraphs_body_large[paragraph_index]
         else: break
         
         paragraph_index += 1
-        print(paragraph_index)
 
-    # print(paragraph_index-1)
-    # print(paragraphs[paragraph_index-1])
-    # print()
-    # print(paragraphs_body_small[paragraph_index-1])
     paragraphs[paragraph_index-1] = paragraphs_body_small[paragraph_index-1]
 
 
@@ -348,14 +240,32 @@ for magazine_page_foldername in magazine_pages_foldernames:
         # Scorri il primo array (small) x numero volte di elementi del secondo array (large)
         # in un singolo scorrimento, sostituisci uno alla volta gli elementi in small con large
         # ogni nuovo scorrimento, comincia a scorre da un elemento in avanti e i precedenti mettili tutti a large
-    for paragraph in paragraphs:
-        print(paragraph)
-        print()
 
-    text = ' '.join(paragraphs)
-    mag.a4_draw_text_study(draw, text, grid_map, commit=True)
+    # for paragraph in paragraphs_body_small:
+    #     print(paragraph)
+    #     print()
+    # print()
+    # print()
+
+    # for paragraph in paragraphs_body_large:
+    #     print(paragraph)
+    #     print()
+    # print()
+    # print()
+
+    # for paragraph in paragraphs:
+    #     print(paragraph)
+    #     print()
+    # print()
+    # print()
+
+
+    text = '\n'.join(paragraphs)
+    mag.a4_draw_text_study_2(draw, text, grid_map, commit=True)
 
     export_url = data['export_url']
     img.save(export_url)
+    # img.show()
 
-    # quit()
+    print('end')
+    quit()

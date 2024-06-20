@@ -752,3 +752,130 @@ while True:
                 pygame.draw.rect(screen, '#000000', (red_x_1, red_y_1, page_grid_col_w, page_grid_row_h))
 
     pygame.display.update()
+
+
+
+
+
+
+
+
+
+
+
+def draw_body(draw, lines, blocks_list):
+    block_i = 0
+    start_col_i = blocks_list[block_i][0]
+    start_row_i = blocks_list[block_i][1]
+    end_row_i = blocks_list[block_i][2]
+    line_i = 0
+    for line in lines:
+        x_1 = a4_grid_col_w * start_col_i + a4_guides_col_gap * ((start_col_i-2)//4)
+        y_1 = a4_grid_row_h * start_row_i + g.BODY_FONT_SIZE * line_i
+        line_row_i = y_1 // a4_guides_row_h
+        if line_row_i > end_row_i - 1: 
+            block_i += 1
+            if block_i < len(blocks_list):
+                start_col_i = blocks_list[block_i][0]
+                start_row_i = blocks_list[block_i][1]
+                end_row_i = blocks_list[block_i][2]
+                line_i = 0
+                x_1 = a4_grid_col_w * start_col_i + a4_guides_col_gap * ((start_col_i-2)//4)
+                y_1 = a4_grid_row_h * start_row_i + g.BODY_FONT_SIZE * line_i
+            else:
+                break
+                
+        draw.text((x_1, y_1), line, (0, 0, 0), font=body_font)
+        line_i += 1
+
+
+
+
+def draw_body_justify(draw, lines, blocks_list):
+    block_i = 0
+    start_col_i = blocks_list[block_i][0]
+    start_row_i = blocks_list[block_i][1]
+    end_row_i = blocks_list[block_i][2]
+    line_i = 0
+    lines_num = len(lines)
+    for i, line in enumerate(lines):
+        x_1 = a4_grid_col_w * start_col_i + a4_guides_col_gap * ((start_col_i-2)//4)
+        y_1 = a4_grid_row_h * start_row_i + g.BODY_FONT_SIZE * line_i
+        line_row_i = y_1 // a4_guides_row_h
+        if line_row_i > end_row_i - 1: 
+            block_i += 1
+            if block_i < len(blocks_list):
+                start_col_i = blocks_list[block_i][0]
+                start_row_i = blocks_list[block_i][1]
+                end_row_i = blocks_list[block_i][2]
+                line_i = 0
+                x_1 = a4_grid_col_w * start_col_i + a4_guides_col_gap * ((start_col_i-2)//4)
+                y_1 = a4_grid_row_h * start_row_i + g.BODY_FONT_SIZE * line_i
+            else:
+                break
+
+        if i != lines_num - 1:
+            words = line.split(" ")
+            words_length = sum(draw.textlength(w, font=body_font) for w in words)
+            space_length = ((a4_guides_col_w - a4_guides_col_gap*2) - words_length) / (len(words) - 1)
+            x = x_1
+            for word in words:
+                draw.text((x, y_1), word, font=body_font, fill="black")
+                x += draw.textlength(word, font=body_font) + space_length
+        else:
+            draw.text((x_1, y_1), line, font=body_font, fill="black")
+
+        line_i += 1
+
+
+
+def a4_body_blocks():
+    cols_i_list = []
+    if guides_col_num == 1:
+        cols_i_list = [2]
+    elif guides_col_num == 2:
+        cols_i_list = [2, 8]
+    elif guides_col_num == 3:
+        cols_i_list = [2, 6, 10]
+    blocks_list = []
+    block_curr = ['', '', '']
+    for col_i in range(g.GRID_COL_NUM):
+        if col_i in cols_i_list:
+            for row_i in range(g.GRID_ROW_NUM):
+                if grid_map[row_i][col_i] == 'b':
+                    if block_curr[0] == '': block_curr[0] = col_i
+                    if block_curr[1] == '': block_curr[1] = row_i
+                elif grid_map[row_i][col_i] != 'b':
+                    if block_curr != ['', '', '']:
+                        if block_curr[2] == '': block_curr[2] = row_i
+                        blocks_list.append(block_curr)
+                        block_curr = ['', '', '']
+            if block_curr != ['', '', '']:
+                if block_curr[2] == '': block_curr[2] = row_i
+                blocks_list.append(block_curr)
+                block_curr = block_curr = ['', '', '']
+    return blocks_list
+
+
+
+
+
+def text_to_lines(text):
+    words = text.split(' ')
+    lines = []
+    line_curr = ''
+    for word in words:
+        _, _, line_curr_w, _ = body_font.getbbox(line_curr)
+        _, _, word_w, _ = body_font.getbbox(word)
+        if line_curr_w + word_w < a4_guides_col_w - a4_guides_col_gap*2:
+            line_curr += f'{word} '
+        else:
+            lines.append(line_curr.strip())
+            line_curr = f'{word} '
+    lines.append(line_curr)
+    return lines
+
+
+
+
+
