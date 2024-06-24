@@ -128,9 +128,6 @@ def a4_draw_title(draw, grid_map, title):
         draw.text((x_1, y_1), title, text_color, font=title_font)
 
 
-
-
-
 def a4_draw_title_new(draw, grid_map, title):
     col_i_1 = -1
     row_i_1 = -1

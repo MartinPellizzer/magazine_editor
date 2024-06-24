@@ -14,6 +14,7 @@ page_x = g.WINDOW_WIDTH//2-g.PAGE_WIDTH//2
 page_y = g.WINDOW_HEIGHT//2-g.PAGE_HEIGHT//2
 
 
+database_filepath = 'C:/magazine_database'
 
 ####################################################################################################
 # FUNC
@@ -176,11 +177,11 @@ def ai_body_large(json_filepath, data):
 # EXE
 ####################################################################################################
 magazine_vol = '2024_06'
-magazine_folderpath = f'database/{magazine_vol}'
+magazine_folderpath = f'{database_filepath}/{magazine_vol}'
 magazine_pages_foldernames = os.listdir(magazine_folderpath)
 i = 0
 for magazine_page_foldername in magazine_pages_foldernames:
-    if i < 10:
+    if i < 9:
         i += 1
         continue 
     magazine_page_folderpath = f'{magazine_folderpath}/{magazine_page_foldername}'
