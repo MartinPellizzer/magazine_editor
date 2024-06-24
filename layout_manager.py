@@ -98,65 +98,6 @@ def a4_draw_images(img):
             img.paste(foreground, (x_1, y_1))
 
 
-def a4_draw_dark(draw):
-    for row_i in range(g.GRID_ROW_NUM):
-        for col_i in range(g.GRID_COL_NUM):
-            if 'd' in grid_map[row_i][col_i]:
-                x_1 = g.A4_CELL_SIZE * col_i
-                y_1 = g.A4_CELL_SIZE * row_i
-                x_2 = x_1 + g.A4_CELL_SIZE
-                y_2 = y_1 + g.A4_CELL_SIZE
-                draw.rectangle(
-                    (
-                        (x_1, y_1), 
-                        (x_2, y_2)
-                    ), 
-                    fill="#020617"
-                )
-
-
-def a4_draw_title(draw):
-    col_i_1 = -1
-    row_i_1 = -1
-    col_i_2 = -1
-    row_i_2 = -1
-    for row_i in range(g.GRID_ROW_NUM):
-        for col_i in range(g.GRID_COL_NUM):
-            if 't' in grid_map[row_i][col_i]:
-                if col_i_1 == -1 and row_i_1 == -1:
-                    col_i_1 = col_i
-                    row_i_1 = row_i
-                else:
-                    col_i_2 = col_i
-                    row_i_2 = row_i
-
-    title_available_w = (col_i_2 - col_i_1 + 1) * g.A4_CELL_SIZE
-    title_available_h = (row_i_2 - row_i_1 + 1) * g.A4_CELL_SIZE
-
-    title = 'Nature\'s\nWonderland'
-    # title = 'This is a title'
-    # title = 'How to sanitize poultry\nmeat with ozone'
-
-    lines = title.split('\n')
-    line_longest = ''
-    for line in lines:
-        if len(line_longest) < len(line): line_longest = line
-    
-    title_font_size = 1
-    title_font = ImageFont.truetype("assets/fonts/arial/ARIAL.TTF", title_font_size)
-    for _ in range(999):
-        print(title_font_size)
-        title_font = ImageFont.truetype("assets/fonts/arial/ARIAL.TTF", title_font_size)
-        _, _, title_curr_w, title_curr_h = title_font.getbbox(line_longest)
-        if title_curr_w > title_available_w or title_curr_h > title_available_h:
-            break
-        else:
-            title_font_size += 1
-
-    if col_i_1 != -1 and row_i_1 != -1 and col_i_2 != -1 and row_i_2 != -1:
-        x_1 = g.A4_CELL_SIZE * col_i_1
-        y_1 = g.A4_CELL_SIZE * row_i_1
-        draw.text((x_1, y_1), title, (0, 0, 0), font=title_font)
 
 
 def a4_draw_text(draw):
@@ -239,8 +180,8 @@ def a4_template_preview():
         mag.a4_draw_guides(draw, guide_size)
 
     a4_draw_images(img)
-    a4_draw_dark(draw)
-    a4_draw_title(draw)
+    mag.a4_draw_dark(draw, grid_map)
+    mag.a4_draw_title(draw, grid_map, title='Nature\'s\nWonderland')
     a4_draw_text(draw)
 
     img.show()
@@ -272,8 +213,8 @@ def a4_template_save():
         mag.a4_draw_grid(draw)
         mag.a4_draw_guides(draw, guide_size)
     a4_draw_images(img)
-    a4_draw_dark(draw)
-    a4_draw_title(draw)
+    mag.a4_draw_dark(draw, grid_map)
+    mag.a4_draw_title(draw, grid_map, title='Nature\'s\nWonderland')
     a4_draw_text(draw)
     export_filepath = f'templates/{month_folder}/{last_template_id_str}.jpg'
     img.save(export_filepath)

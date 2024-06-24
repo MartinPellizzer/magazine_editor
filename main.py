@@ -178,7 +178,11 @@ def ai_body_large(json_filepath, data):
 magazine_vol = '2024_06'
 magazine_folderpath = f'database/{magazine_vol}'
 magazine_pages_foldernames = os.listdir(magazine_folderpath)
+i = 0
 for magazine_page_foldername in magazine_pages_foldernames:
+    # if i < 2:
+    #     i += 1
+    #     continue 
     magazine_page_folderpath = f'{magazine_folderpath}/{magazine_page_foldername}'
     print(magazine_page_folderpath)
 
@@ -211,10 +215,10 @@ for magazine_page_foldername in magazine_pages_foldernames:
     img = Image.new('RGB', (g.A4_WIDTH, g.A4_HEIGHT), color='white')
     draw = ImageDraw.Draw(img)
 
-    # mag.a4_draw_grid(draw)
-
     try: mag.a4_draw_images(img, magazine_page_folderpath, grid_map)
     except: pass
+
+    mag.a4_draw_dark(draw, grid_map)
 
     paragraphs_body_small = [paragraph.replace('\n', ' ').strip() for paragraph in data['body_small']]
     paragraphs_body_large = [paragraph.replace('\n', ' ').strip() for paragraph in data['body_large']]
@@ -223,17 +227,22 @@ for magazine_page_foldername in magazine_pages_foldernames:
     paragraphs = [paragraph for paragraph in paragraphs_body_small]
 
     paragraph_index = 0
+    text_overflow = False
     for _ in range(5):
         text = '\n'.join(paragraphs)
 
-        is_under = mag.a4_draw_text_study_2(draw, text, grid_map, commit=False)
+        is_under = mag.a4_draw_text_study(draw, text, grid_map, commit=False)
 
-        if is_under: paragraphs[paragraph_index] = paragraphs_body_large[paragraph_index]
-        else: break
+        if is_under: 
+            paragraphs[paragraph_index] = paragraphs_body_large[paragraph_index]
+        else: 
+            text_overflow = True
+            break
         
         paragraph_index += 1
 
-    paragraphs[paragraph_index-1] = paragraphs_body_small[paragraph_index-1]
+    if text_overflow:
+        paragraphs[paragraph_index-1] = paragraphs_body_small[paragraph_index-1]
 
 
     # TODO: ottimizza scelta paragrafi per riempire i buchi
@@ -241,31 +250,22 @@ for magazine_page_foldername in magazine_pages_foldernames:
         # in un singolo scorrimento, sostituisci uno alla volta gli elementi in small con large
         # ogni nuovo scorrimento, comincia a scorre da un elemento in avanti e i precedenti mettili tutti a large
 
-    # for paragraph in paragraphs_body_small:
-    #     print(paragraph)
-    #     print()
-    # print()
-    # print()
-
-    # for paragraph in paragraphs_body_large:
-    #     print(paragraph)
-    #     print()
-    # print()
-    # print()
-
-    # for paragraph in paragraphs:
-    #     print(paragraph)
-    #     print()
-    # print()
-    # print()
-
+    for paragraph in paragraphs:
+        print(paragraph)
+        print()
 
     text = '\n'.join(paragraphs)
-    mag.a4_draw_text_study_2(draw, text, grid_map, commit=True)
+    mag.a4_draw_text_study(draw, text, grid_map, commit=True)
+
+    study_title = data['study_title']
+    study_title = "Nature's \nWonderland"
+    mag.a4_draw_title(draw, grid_map, study_title)
+    
+    # mag.a4_draw_grid(draw)
+
 
     export_url = data['export_url']
     img.save(export_url)
     # img.show()
 
-    print('end')
-    quit()
+    # quit()

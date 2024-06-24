@@ -1,3 +1,5 @@
+- fix new-line problem -> correct y_1 pos for new line (maybe add a fake new empty line ad draw it instead of incrementing y_1 two times?)
+
 - main: complete ai for text generation
     - make body small a list and save it to json when cleaned
     - adjust and refactor code to check if text is the right length (make the length as close as possible to the size of the give text blocks)
