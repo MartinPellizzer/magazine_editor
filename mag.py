@@ -129,6 +129,7 @@ def a4_draw_title(draw, grid_map, title):
 
 
 def a4_draw_title_new(draw, grid_map, title):
+    # GET TITLE BOX
     col_i_1 = -1
     row_i_1 = -1
     col_i_2 = -1
@@ -143,35 +144,63 @@ def a4_draw_title_new(draw, grid_map, title):
                     col_i_2 = col_i
                     row_i_2 = row_i
 
+    # GET TITLE MAX WIDTH AND HEIGHT
     title_available_w = (col_i_2 - col_i_1 + 1) * g.A4_CELL_SIZE
-    title_available_h = (row_i_2 - row_i_1 + 1) * g.A4_CELL_SIZE
+    title_available_h = (row_i_2 - row_i_1) * g.A4_CELL_SIZE
 
-    # title = 'This is a title'
-    # title = 'How to sanitize poultry\nmeat with ozone'
+    # SPLIT TITLE BY "N"
+    for lines_num in range(1, 9):
+        title_words_num = len(title.split(' ')) 
+        line_words_num = title_words_num // lines_num
 
-    lines = title.split('\n')
-    line_longest = ''
-    for line in lines:
-        if len(line_longest) < len(line): line_longest = line
+        words = title.split(' ')
+        lines = []
+        line_curr = ''
+        i = 0
+        for word in words:
+            if i < line_words_num:
+                line_curr += f'{word} '
+                i += 1
+            else:
+                lines.append(line_curr)
+                line_curr = f'{word} '
+                i = 0
+        lines.append(line_curr)
+            
+        # GET TITLE LINE MAX WIDTH
+        line_longest = ''
+        for line in lines:
+            if len(line_longest) < len(line): line_longest = line
+        
+        lines = '\n'.join(lines)
 
-    text_color = '#000000'
-    if 'd' in grid_map[row_i_1][col_i_1]: text_color = '#ffffff'
-    
-    title_font_size = 1
-    title_font = ImageFont.truetype("assets/fonts/arial/ARIAL.TTF", title_font_size)
-    for _ in range(999):
-        # print(title_font_size)
+        # CHOOSE TITLE COLOR
+        text_color = '#000000'
+        if 'd' in grid_map[row_i_1][col_i_1]: text_color = '#ffffff'
+        
+        # CALC TITLE SIZE
+        title_font_size = 1
         title_font = ImageFont.truetype("assets/fonts/arial/ARIAL.TTF", title_font_size)
-        _, _, title_curr_w, title_curr_h = title_font.getbbox(line_longest)
-        if title_curr_w > title_available_w or title_curr_h > title_available_h:
-            break
-        else:
-            title_font_size += 1
+        for _ in range(999):
+            title_font = ImageFont.truetype("assets/fonts/arial/ARIAL.TTF", title_font_size)
+            _, _, title_curr_w, title_curr_h = title_font.getbbox(line_longest)
+            if title_curr_w > title_available_w or title_curr_h > title_available_h:
+                break
+            else:
+                title_font_size += 1
 
+        lines_h = title_font_size * lines_num
+        # for line in lines.split('\n'):
+        #     _, _, _, line_h = title_font.getbbox(line)
+        #     lines_h += line_h
+        print(lines_h , title_available_h)
+        if lines_h > title_available_h: break
+
+    # DRAW TITLE
     if col_i_1 != -1 and row_i_1 != -1 and col_i_2 != -1 and row_i_2 != -1:
         x_1 = g.A4_CELL_SIZE * col_i_1
         y_1 = g.A4_CELL_SIZE * row_i_1
-        draw.text((x_1, y_1), title, text_color, font=title_font)
+        draw.text((x_1, y_1), lines, text_color, font=title_font)
 
 
 def a4_draw_text_study(draw, text, grid_map, commit):
@@ -239,6 +268,7 @@ def a4_draw_text_study(draw, text, grid_map, commit):
                 is_last_line = False
                 break
 
+        print([line])
         is_paragraph_last_line = False
         if '\n' in line:
             line = line.split('\n')[0]

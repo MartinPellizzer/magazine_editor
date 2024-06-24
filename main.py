@@ -181,9 +181,9 @@ magazine_folderpath = f'{database_filepath}/{magazine_vol}'
 magazine_pages_foldernames = os.listdir(magazine_folderpath)
 i = 0
 for magazine_page_foldername in magazine_pages_foldernames:
-    if i < 9:
-        i += 1
-        continue 
+    # if i < 9:
+    #     i += 1
+    #     continue 
     magazine_page_folderpath = f'{magazine_folderpath}/{magazine_page_foldername}'
     print(magazine_page_folderpath)
 
@@ -221,6 +221,10 @@ for magazine_page_foldername in magazine_pages_foldernames:
 
     mag.a4_draw_dark(draw, grid_map)
 
+    study_title = data['study_title']
+    # study_title = "Nature's \nWonderland"
+    mag.a4_draw_title_new(draw, grid_map, study_title)
+
     paragraphs_body_small = [paragraph.replace('\n', ' ').strip() for paragraph in data['body_small']]
     paragraphs_body_large = [paragraph.replace('\n', ' ').strip() for paragraph in data['body_large']]
 
@@ -242,8 +246,8 @@ for magazine_page_foldername in magazine_pages_foldernames:
         
         paragraph_index += 1
 
-    if text_overflow:
-        paragraphs[paragraph_index-1] = paragraphs_body_small[paragraph_index-1]
+    # if text_overflow:
+    paragraphs[paragraph_index-1] = paragraphs_body_small[paragraph_index-1]
 
 
     # TODO: ottimizza scelta paragrafi per riempire i buchi
@@ -258,9 +262,6 @@ for magazine_page_foldername in magazine_pages_foldernames:
     text = '\n'.join(paragraphs)
     mag.a4_draw_text_study(draw, text, grid_map, commit=True)
 
-    study_title = data['study_title']
-    # study_title = "Nature's \nWonderland"
-    mag.a4_draw_title_new(draw, grid_map, study_title)
     
     # mag.a4_draw_grid(draw)
 
@@ -270,3 +271,15 @@ for magazine_page_foldername in magazine_pages_foldernames:
     # img.show()
 
     # quit()
+
+
+images = [
+    Image.open(f"export/{magazine_vol}/{filename}")
+    for filename in os.listdir(f"export/{magazine_vol}/")
+    if filename.endswith('.jpg')
+]
+
+pdf_path = f'export/{magazine_vol}/_magazine.pdf'
+images[0].save(
+    pdf_path, "PDF" , resolution=100.0, save_all=True, append_images=images[1:]
+)
