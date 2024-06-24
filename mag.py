@@ -128,6 +128,55 @@ def a4_draw_title(draw, grid_map, title):
         draw.text((x_1, y_1), title, text_color, font=title_font)
 
 
+
+
+
+def a4_draw_title_new(draw, grid_map, title):
+    col_i_1 = -1
+    row_i_1 = -1
+    col_i_2 = -1
+    row_i_2 = -1
+    for row_i in range(g.GRID_ROW_NUM):
+        for col_i in range(g.GRID_COL_NUM):
+            if 't' in grid_map[row_i][col_i]:
+                if col_i_1 == -1 and row_i_1 == -1:
+                    col_i_1 = col_i
+                    row_i_1 = row_i
+                else:
+                    col_i_2 = col_i
+                    row_i_2 = row_i
+
+    title_available_w = (col_i_2 - col_i_1 + 1) * g.A4_CELL_SIZE
+    title_available_h = (row_i_2 - row_i_1 + 1) * g.A4_CELL_SIZE
+
+    # title = 'This is a title'
+    # title = 'How to sanitize poultry\nmeat with ozone'
+
+    lines = title.split('\n')
+    line_longest = ''
+    for line in lines:
+        if len(line_longest) < len(line): line_longest = line
+
+    text_color = '#000000'
+    if 'd' in grid_map[row_i_1][col_i_1]: text_color = '#ffffff'
+    
+    title_font_size = 1
+    title_font = ImageFont.truetype("assets/fonts/arial/ARIAL.TTF", title_font_size)
+    for _ in range(999):
+        # print(title_font_size)
+        title_font = ImageFont.truetype("assets/fonts/arial/ARIAL.TTF", title_font_size)
+        _, _, title_curr_w, title_curr_h = title_font.getbbox(line_longest)
+        if title_curr_w > title_available_w or title_curr_h > title_available_h:
+            break
+        else:
+            title_font_size += 1
+
+    if col_i_1 != -1 and row_i_1 != -1 and col_i_2 != -1 and row_i_2 != -1:
+        x_1 = g.A4_CELL_SIZE * col_i_1
+        y_1 = g.A4_CELL_SIZE * row_i_1
+        draw.text((x_1, y_1), title, text_color, font=title_font)
+
+
 def a4_draw_text_study(draw, text, grid_map, commit):
     text_total = text
     text_words_written = 0

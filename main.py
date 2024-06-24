@@ -180,9 +180,9 @@ magazine_folderpath = f'database/{magazine_vol}'
 magazine_pages_foldernames = os.listdir(magazine_folderpath)
 i = 0
 for magazine_page_foldername in magazine_pages_foldernames:
-    # if i < 2:
-    #     i += 1
-    #     continue 
+    if i < 10:
+        i += 1
+        continue 
     magazine_page_folderpath = f'{magazine_folderpath}/{magazine_page_foldername}'
     print(magazine_page_folderpath)
 
@@ -258,8 +258,8 @@ for magazine_page_foldername in magazine_pages_foldernames:
     mag.a4_draw_text_study(draw, text, grid_map, commit=True)
 
     study_title = data['study_title']
-    study_title = "Nature's \nWonderland"
-    mag.a4_draw_title(draw, grid_map, study_title)
+    # study_title = "Nature's \nWonderland"
+    mag.a4_draw_title_new(draw, grid_map, study_title)
     
     # mag.a4_draw_grid(draw)
 
