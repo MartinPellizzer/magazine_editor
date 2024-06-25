@@ -173,17 +173,56 @@ def ai_body_large(json_filepath, data):
 
 
 
+def ai_title_small(json_filepath, data):
+    key = 'title_small'
+    # if key in data: del data[key]
+    if key not in data:
+        study_abstract = data['body_small']
+        prompt = f'''
+            Scrivi in Italiano un titolo corto che attiri l'attenzione per il seguente articolo: {study_abstract}
+            Rispondi in meno di 5 parole.
+        '''
+        reply = util_ai.gen_reply(prompt).strip()
+
+        if len(reply.split(' ')) <= 9:
+            print('*********************************************************')
+            print(reply)
+            print('*********************************************************')
+            data[key] = reply
+            util.json_write(json_filepath, data)
+        time.sleep(g.SLEEP_TIME)
+
+
 ####################################################################################################
 # EXE
 ####################################################################################################
 magazine_vol = '2024_06'
 magazine_folderpath = f'{database_filepath}/{magazine_vol}'
 magazine_pages_foldernames = os.listdir(magazine_folderpath)
-i = 0
+
+magazine_cover_folderpath = f'{database_filepath}/{magazine_vol}/cover'
+
+magazine_cover_filepath_out = f'export/{magazine_vol}/cover.jpg'
+
+img = Image.new('RGB', (g.A4_WIDTH, g.A4_HEIGHT), color='white')
+draw = ImageDraw.Draw(img)
+
+mag.cover(img, draw)
+
+img.save(magazine_cover_filepath_out)
+# img.show()
+
+# quit()
+
+page_i = 0
 for magazine_page_foldername in magazine_pages_foldernames:
-    # if i < 9:
-    #     i += 1
+    if magazine_page_foldername == 'cover': continue
+    
+    # if page_i < 10:
+    #     page_i += 1
     #     continue 
+    page_i += 1
+
     magazine_page_folderpath = f'{magazine_folderpath}/{magazine_page_foldername}'
     print(magazine_page_folderpath)
 
@@ -198,6 +237,7 @@ for magazine_page_foldername in magazine_pages_foldernames:
 
     ai_body_small(json_filepath, data)
     ai_body_large(json_filepath, data)
+    ai_title_small(json_filepath, data)
 
     template_url = data['template_url']
     print(template_url)
@@ -221,7 +261,7 @@ for magazine_page_foldername in magazine_pages_foldernames:
 
     mag.a4_draw_dark(draw, grid_map)
 
-    study_title = data['study_title']
+    study_title = data['title_small'].replace('\"', '')
     # study_title = "Nature's \nWonderland"
     mag.a4_draw_title_new(draw, grid_map, study_title)
 
@@ -262,24 +302,50 @@ for magazine_page_foldername in magazine_pages_foldernames:
     text = '\n'.join(paragraphs)
     mag.a4_draw_text_study(draw, text, grid_map, commit=True)
 
-    
-    # mag.a4_draw_grid(draw)
 
+
+
+    font_size = 32
+    font = ImageFont.truetype("assets/fonts/arial/ARIAL.TTF", font_size)
+
+    y_1 = g.A4_HEIGHT - g.A4_CELL_SIZE*2 
+    color = '#000000'
+
+    if page_i % 2 != 0:
+        text = f'{page_i}   OZONOGROUP'
+        x_1 = g.A4_CELL_SIZE*2 
+        if 'd' in grid_map[-2][2]: color = '#ffffff'
+    else:
+        text = f'OZONOGROUP   {page_i}'
+        _, _, text_w, _ = font.getbbox(text)
+        x_1 = g.A4_WIDTH - g.A4_CELL_SIZE*2 - text_w
+        if 'd' in grid_map[-2][-2]: color = '#ffffff'
+
+
+    draw.text((x_1, y_1), text, color, font=font)
+
+    # mag.a4_draw_grid(draw)
 
     export_url = data['export_url']
     img.save(export_url)
+
+    
+
     # img.show()
 
     # quit()
 
 
-images = [
-    Image.open(f"export/{magazine_vol}/{filename}")
-    for filename in os.listdir(f"export/{magazine_vol}/")
-    if filename.endswith('.jpg')
-]
+def merge_pdf():
+    images = [
+        Image.open(f"export/{magazine_vol}/{filename}")
+        for filename in os.listdir(f"export/{magazine_vol}/")
+        if filename.endswith('.jpg')
+    ]
 
-pdf_path = f'export/{magazine_vol}/_magazine.pdf'
-images[0].save(
-    pdf_path, "PDF" , resolution=100.0, save_all=True, append_images=images[1:]
-)
+    pdf_path = f'export/{magazine_vol}/_magazine.pdf'
+    images[0].save(
+        pdf_path, "PDF" , resolution=100.0, save_all=True, append_images=images[1:]
+    )
+
+merge_pdf()
