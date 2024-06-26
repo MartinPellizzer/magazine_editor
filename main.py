@@ -200,25 +200,28 @@ magazine_vol = '2024_06'
 magazine_folderpath = f'{database_filepath}/{magazine_vol}'
 magazine_pages_foldernames = os.listdir(magazine_folderpath)
 
-magazine_cover_folderpath = f'{database_filepath}/{magazine_vol}/cover'
+def magazine_cover():
+    magazine_cover_folderpath = f'{database_filepath}/{magazine_vol}/cover'
 
-magazine_cover_filepath_out = f'export/{magazine_vol}/cover.jpg'
+    magazine_cover_filepath_out = f'export/{magazine_vol}/cover.jpg'
 
-img = Image.new('RGB', (g.A4_WIDTH, g.A4_HEIGHT), color='white')
-draw = ImageDraw.Draw(img)
+    img = Image.new('RGB', (g.A4_WIDTH, g.A4_HEIGHT), color='white')
+    draw = ImageDraw.Draw(img)
 
-mag.cover(img, draw)
+    mag.cover(img, draw)
 
-img.save(magazine_cover_filepath_out)
-# img.show()
+    img.save(magazine_cover_filepath_out)
+    # img.show()
 
-# quit()
+    # quit()
+
+# magazine_cover()
 
 page_i = 0
 for magazine_page_foldername in magazine_pages_foldernames:
     if magazine_page_foldername == 'cover': continue
     
-    # if page_i < 10:
+    # if page_i < 4:
     #     page_i += 1
     #     continue 
     page_i += 1
@@ -263,7 +266,7 @@ for magazine_page_foldername in magazine_pages_foldernames:
 
     study_title = data['title_small'].replace('\"', '')
     # study_title = "Nature's \nWonderland"
-    mag.a4_draw_title_new(draw, grid_map, study_title)
+    mag.a4_draw_title_constrained_y(draw, grid_map, study_title)
 
     paragraphs_body_small = [paragraph.replace('\n', ' ').strip() for paragraph in data['body_small']]
     paragraphs_body_large = [paragraph.replace('\n', ' ').strip() for paragraph in data['body_large']]

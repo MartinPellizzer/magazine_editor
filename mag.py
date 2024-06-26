@@ -203,6 +203,159 @@ def a4_draw_title_new(draw, grid_map, title):
         draw.text((x_1, y_1), lines, text_color, font=title_font)
 
 
+def a4_draw_title_constrained_y(draw, grid_map, title):
+    # GET TITLE BOX
+    col_i_1 = -1
+    row_i_1 = -1
+    col_i_2 = -1
+    row_i_2 = -1
+    for row_i in range(g.GRID_ROW_NUM):
+        for col_i in range(g.GRID_COL_NUM):
+            if 't' in grid_map[row_i][col_i]:
+                if col_i_1 == -1 and row_i_1 == -1:
+                    col_i_1 = col_i
+                    row_i_1 = row_i
+                else:
+                    col_i_2 = col_i
+                    row_i_2 = row_i
+
+    print(row_i_1, col_i_1, row_i_2, col_i_2)
+
+    
+
+    # title = ['this is a', 'test title']
+    # lines = title
+    
+    # title_words = title.split(' ')
+    # title_words_num = len(title_words)
+    # lines_num = 4
+    # line_words_num = title_words_num // lines_num
+    # lines = []
+    # line = []
+    # for i, word in enumerate(title_words):
+    #     if len(line) < line_words_num:
+    #         line.append(word)
+    #     else:
+    #         line.append(word)
+    #         lines.append(' '.join(line))
+    #         line = []
+    # lines.append(' '.join(line))
+
+    x_1 = g.A4_CELL_SIZE * col_i_1
+    y_1 = g.A4_CELL_SIZE * row_i_1
+    x_2 = g.A4_CELL_SIZE * (col_i_2 + 1)
+    y_2 = g.A4_CELL_SIZE * (row_i_2 + 1)
+    
+    # draw.rectangle(
+    #     (
+    #         (x_1, y_1), 
+    #         (x_2, y_2)
+    #     ), 
+    #     fill="#ff0000"
+    # )
+
+    title_available_w = x_2 - x_1
+    title_available_h = y_2 - y_1
+
+    title_color = '#000000'
+    if 'd' in grid_map[row_i_1][col_i_1]: title_color = '#ffffff'
+
+    print(title)
+    title_words_num = len(title.split(' '))
+    line_1 = ' '.join(title.split(' ')[0:title_words_num-4])
+    line_2 = ' '.join(title.split(' ')[title_words_num-4:title_words_num-1])
+    line_3 = ' '.join(title.split(' ')[title_words_num-1:])
+    # lines = [title]
+    lines = [line_1, line_2, line_3]
+    print(lines)
+    # quit()
+
+    # lines_num = 1
+    # i = 0
+    # for _ in range(999):
+    #     title_font_size = i
+    #     title_font = ImageFont.truetype("assets/fonts/arial/ARIAL.TTF", title_font_size)
+
+    #     # get lines sizes
+    #     lines_height_total = 0
+    #     lines_width_max = 0
+    #     lines_width_max_index = 0
+    #     lines_height_max = 0
+    #     for line_index, line in enumerate(lines):
+    #         _, _, line_w, line_h = title_font.getbbox(line)
+    #         lines_height_total += line_h
+    #         if lines_width_max < line_w: 
+    #             lines_width_max = line_w
+    #             lines_width_max_index = line_index
+    #         if lines_height_max < line_h: lines_height_max = line_h
+
+    #     # stop increasing font size when max height is reaced
+    #     if lines_height_total > title_available_h: break
+
+    #     # break in more line if lines too wide
+    #     if lines_width_max > title_available_w: 
+    #         # lines_num += 1
+            
+    #         # title_words = title.split(' ')
+    #         # title_words_num = len(title_words)
+    #         # lines_num = lines_num
+    #         # line_words_num = title_words_num // lines_num
+    #         # lines = []
+    #         # line = []
+    #         # for i, word in enumerate(title_words):
+    #         #     if len(line) < line_words_num:
+    #         #         line.append(word)
+    #         #     else:
+    #         #         line.append(word)
+    #         #         lines.append(' '.join(line))
+    #         #         line = []
+    #         # lines.append(' '.join(line))
+    #         # i = 1
+    #         pass
+    #     else:
+    #         i += 1
+
+    for i in range(999):
+        title_font_size = i
+        title_font = ImageFont.truetype("assets/fonts/arial/ARIAL.TTF", title_font_size)
+
+        words = title.split()
+        lines = []
+        line = ''
+        for word in words:
+            _, _, line_w, line_h = title_font.getbbox(line)
+            _, _, word_w, word_h = title_font.getbbox(word)
+            if line_w + word_w < title_available_w:
+                line += f'{word} '
+            else:
+                lines.append(line.strip())
+                line = f'{word} '
+        lines.append(line.strip())
+
+        lines_height_total = 0
+        for line_index, line in enumerate(lines):
+            _, _, line_w, line_h = title_font.getbbox(line)
+            lines_height_total += line_h
+        if lines_height_total > title_available_h: break
+
+    print(lines)
+
+    for i in range(999):
+        title_font_size -= 1
+        title_font = ImageFont.truetype("assets/fonts/arial/ARIAL.TTF", title_font_size)
+
+        lines_height_total = 0
+        for line_index, line in enumerate(lines):
+            _, _, line_w, line_h = title_font.getbbox(line)
+            lines_height_total += line_h
+        if lines_height_total < title_available_h: break
+
+
+    for i, line in enumerate(lines):
+        draw.text((x_1, y_1 + (title_font_size * i)), line, title_color, font=title_font)
+
+
+
 def a4_draw_text_study(draw, text, grid_map, commit):
     text_total = text
     text_words_written = 0
@@ -268,7 +421,6 @@ def a4_draw_text_study(draw, text, grid_map, commit):
                 is_last_line = False
                 break
 
-        print([line])
         is_paragraph_last_line = False
         if '\n' in line:
             line = line.split('\n')[0]
@@ -341,6 +493,7 @@ def cover(img, draw):
     font = ImageFont.truetype("assets/fonts/arial/ARIALBD.TTF", font_size)
     draw.text((x, y), title, '#000000', font=font)
 
+
     # BLOCK 1
 
     # title
@@ -401,6 +554,7 @@ def cover(img, draw):
         fill="#000000"
     )
     
+
     # BLOCK 2
 
     # title
