@@ -466,7 +466,7 @@ def a4_draw_text_study(draw, text, grid_map, commit):
     return is_last_line
 
 
-def cover(img, draw):
+def cover_front(img, draw):
     # IMAGE
     cell_x = 2
     cell_y = 8
@@ -502,7 +502,7 @@ def cover(img, draw):
     x = g.A4_CELL_SIZE * cell_x
     y = g.A4_CELL_SIZE * cell_y
 
-    title = 'Sirius is the brightest star.'
+    title = 'Ozono vs. rifiuti organici delle raffinerie'
     font_size = 96
     font = ImageFont.truetype("assets/fonts/arial/ARIALBD.TTF", font_size)
     _, _, title_w, _ = font.getbbox(title)
@@ -517,7 +517,7 @@ def cover(img, draw):
     y = g.A4_CELL_SIZE * cell_y
 
     font_size = 48
-    text = 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Pellentesque tempus, orci ultrices fermentum posuere, nulla nibh gravida ligula, vel fringilla arcu ex eu neque.'
+    text = 'Può l\'ozono risolvere l\'enorme problema della produzione di inquinamento organico da parte delle raffinerie? Nuovi studi fanno luce sulla questione.'
     font = ImageFont.truetype("assets/fonts/arial/ARIAL.TTF", font_size)
     _, _, title_w, _ = font.getbbox(text)
 
@@ -562,7 +562,7 @@ def cover(img, draw):
     y = g.A4_HEIGHT - g.A4_CELL_SIZE * 7 - (g.A4_CELL_SIZE//4)
 
     font_size = 64
-    text = 'Cassiopeia'
+    text = 'Addio Norovirus'
     font = ImageFont.truetype("assets/fonts/arial/ARIALBD.TTF", font_size)
     _, _, title_w, _ = font.getbbox(text)
 
@@ -588,7 +588,7 @@ def cover(img, draw):
     y = g.A4_HEIGHT - g.A4_CELL_SIZE * 6
 
     font_size = 48
-    text = 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Pellentesque tempus.'
+    text = 'Possono le microbolle eliminare i Norovirus anche se con poco ozono?'
     font = ImageFont.truetype("assets/fonts/arial/ARIAL.TTF", font_size)
     _, _, title_w, _ = font.getbbox(text)
 
@@ -616,7 +616,7 @@ def cover(img, draw):
     y = g.A4_HEIGHT - g.A4_CELL_SIZE * 7 - (g.A4_CELL_SIZE//4)
 
     font_size = 64
-    text = 'Genimi'
+    text = 'Mangimi Sani'
     font = ImageFont.truetype("assets/fonts/arial/ARIALBD.TTF", font_size)
     _, _, title_w, _ = font.getbbox(text)
 
@@ -641,7 +641,7 @@ def cover(img, draw):
     y = g.A4_HEIGHT - g.A4_CELL_SIZE * 6
 
     font_size = 48
-    text = 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Pellentesque tempus.'
+    text = 'UVC+O3... Combinazione efficace per eliminare le microtossine nei mangimi?'
     font = ImageFont.truetype("assets/fonts/arial/ARIAL.TTF", font_size)
     _, _, title_w, _ = font.getbbox(text)
 
@@ -660,4 +660,225 @@ def cover(img, draw):
 
     for i, line in enumerate(lines):
         draw.text((x, y + (font_size * i * 1.3)), line, '#ffffff', font=font)
+    
+
+def cover_back(img, draw):
+    # IMAGE
+    cell_x = 2
+    cell_y = 8
+
+    x = g.A4_CELL_SIZE * cell_x
+    y = g.A4_CELL_SIZE * cell_y
+    w = g.A4_WIDTH - (g.A4_CELL_SIZE * 2)
+    h = g.A4_HEIGHT - (g.A4_CELL_SIZE * 2)
+
+    # images_filenames = os.listdir('C:/magazine_database/2024_06/cover/')
+    # foreground = Image.open(f'C:/magazine_database/2024_06/cover/{images_filenames[-1]}')
+    # foreground = util.img_resize(foreground, bg_image_w, bg_image_h)
+    # img.paste(foreground, (x, y))
+
+    draw.rectangle(
+        (
+            (x, y), 
+            (w, h)
+        ), 
+        fill="#c6d9d8"
+    )
+
+
+    
+
+    # title
+    cell_y = 34
+
+    x = g.A4_CELL_SIZE * cell_x
+    y = g.A4_CELL_SIZE * cell_y
+
+    title = 'OZONOGROUP SRL'
+    font_size = 96
+    font = ImageFont.truetype("assets/fonts/arial/ARIALBD.TTF", font_size)
+    _, _, title_w, _ = font.getbbox(title)
+
+    draw.text((g.A4_WIDTH//2 - title_w//2, y), title, '#000000', font=font)
+    
+    cell_y += 2
+    x = g.A4_CELL_SIZE * cell_x
+    y = g.A4_CELL_SIZE * cell_y
+    title = 'Telefono: +39 0423 952833'
+    font_size = 48
+    font = ImageFont.truetype("assets/fonts/arial/ARIAL.TTF", font_size)
+    _, _, title_w, _ = font.getbbox(title)
+    draw.text((g.A4_WIDTH//2 - title_w//2, y), title, '#000000', font=font)
+    
+    cell_y += 1
+    x = g.A4_CELL_SIZE * cell_x
+    y = g.A4_CELL_SIZE * cell_y
+    title = 'Email: info@ozonogroup.it'
+    font_size = 48
+    font = ImageFont.truetype("assets/fonts/arial/ARIAL.TTF", font_size)
+    _, _, title_w, _ = font.getbbox(title)
+    draw.text((g.A4_WIDTH//2 - title_w//2, y), title, '#000000', font=font)
+    
+    cell_y += 1
+    x = g.A4_CELL_SIZE * cell_x
+    y = g.A4_CELL_SIZE * cell_y
+    title = 'Sito Web: www.ozonogroup.it'
+    font_size = 48
+    font = ImageFont.truetype("assets/fonts/arial/ARIAL.TTF", font_size)
+    _, _, title_w, _ = font.getbbox(title)
+    draw.text((g.A4_WIDTH//2 - title_w//2, y), title, '#000000', font=font)
+    
+
+
+    # # desc
+
+    # cell_y = 12
+
+    # x = g.A4_CELL_SIZE * cell_x
+    # y = g.A4_CELL_SIZE * cell_y
+
+    # font_size = 48
+    # text = 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Pellentesque tempus, orci ultrices fermentum posuere, nulla nibh gravida ligula, vel fringilla arcu ex eu neque.'
+    # font = ImageFont.truetype("assets/fonts/arial/ARIAL.TTF", font_size)
+    # _, _, title_w, _ = font.getbbox(text)
+
+    # words = text.split(' ')
+    # lines = []
+    # line = ''
+    # for word in words:
+    #     _, _, word_w, _ = font.getbbox(word)
+    #     _, _, line_w, _ = font.getbbox(line)
+    #     if line_w + word_w < bg_image_w - (g.A4_CELL_SIZE * 8):
+    #         line += f'{word} '
+    #     else:
+    #         lines.append(line.strip())
+    #         line = f'{word} '
+    # lines.append(line)
+
+    # for i, line in enumerate(lines):
+    #     _, _, line_w, _ = font.getbbox(line)
+    #     draw.text((g.A4_WIDTH//2 - line_w//2, y + (font_size * i * 1.3)), line, '#ffffff', font=font)
+    
+
+    # # BLACK OVERLAY
+    # x_1 = g.A4_CELL_SIZE * 5
+    # y_1 = g.A4_HEIGHT - g.A4_CELL_SIZE * 8
+    # x_2 = g.A4_WIDTH - g.A4_CELL_SIZE * 5
+    # y_2 = g.A4_HEIGHT - g.A4_CELL_SIZE * 3
+    # overlay_width = x_2 - x_1
+
+    # draw.rectangle(
+    #     (
+    #         (x_1, y_1), 
+    #         (x_2, y_2)
+    #     ), 
+    #     fill="#000000"
+    # )
+    
+
+    # # BLOCK 2
+
+    # # title
+    # x = g.A4_CELL_SIZE * 6
+    # y = g.A4_HEIGHT - g.A4_CELL_SIZE * 7 - (g.A4_CELL_SIZE//4)
+
+    # font_size = 64
+    # text = 'Cassiopeia'
+    # font = ImageFont.truetype("assets/fonts/arial/ARIALBD.TTF", font_size)
+    # _, _, title_w, _ = font.getbbox(text)
+
+    # words = text.split(' ')
+    # lines = []
+    # line = ''
+    # for word in words:
+    #     _, _, word_w, _ = font.getbbox(word)
+    #     _, _, line_w, _ = font.getbbox(line)
+    #     if line_w + word_w < bg_image_w - (g.A4_CELL_SIZE * 8):
+    #         line += f'{word} '
+    #     else:
+    #         lines.append(line.strip())
+    #         line = f'{word} '
+    # lines.append(line)
+
+    # for i, line in enumerate(lines):
+    #     _, _, line_w, _ = font.getbbox(line)
+    #     draw.text((x, y + (font_size * i * 1.3)), line, '#ffffff', font=font)
+    
+    # # desc
+    # x = g.A4_CELL_SIZE * 6
+    # y = g.A4_HEIGHT - g.A4_CELL_SIZE * 6
+
+    # font_size = 48
+    # text = 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Pellentesque tempus.'
+    # font = ImageFont.truetype("assets/fonts/arial/ARIAL.TTF", font_size)
+    # _, _, title_w, _ = font.getbbox(text)
+
+    # words = text.split(' ')
+    # lines = []
+    # line = ''
+    # for word in words:
+    #     _, _, word_w, _ = font.getbbox(word)
+    #     _, _, line_w, _ = font.getbbox(line)
+    #     if line_w + word_w < (overlay_width//2) - (g.A4_CELL_SIZE * 2):
+    #         line += f'{word} '
+    #     else:
+    #         lines.append(line.strip())
+    #         line = f'{word} '
+    # lines.append(line)
+
+    # for i, line in enumerate(lines):
+    #     draw.text((x, y + (font_size * i * 1.3)), line, '#ffffff', font=font)
+    
+    
+    # # BLOCK 3
+
+    # # title
+    # x = g.A4_CELL_SIZE * 18
+    # y = g.A4_HEIGHT - g.A4_CELL_SIZE * 7 - (g.A4_CELL_SIZE//4)
+
+    # font_size = 64
+    # text = 'Genimi'
+    # font = ImageFont.truetype("assets/fonts/arial/ARIALBD.TTF", font_size)
+    # _, _, title_w, _ = font.getbbox(text)
+
+    # words = text.split(' ')
+    # lines = []
+    # line = ''
+    # for word in words:
+    #     _, _, word_w, _ = font.getbbox(word)
+    #     _, _, line_w, _ = font.getbbox(line)
+    #     if line_w + word_w < bg_image_w - (g.A4_CELL_SIZE * 8):
+    #         line += f'{word} '
+    #     else:
+    #         lines.append(line.strip())
+    #         line = f'{word} '
+    # lines.append(line)
+
+    # for i, line in enumerate(lines):
+    #     _, _, line_w, _ = font.getbbox(line)
+    #     draw.text((x, y + (font_size * i * 1.3)), line, '#ffffff', font=font)
+    
+    # # desc
+    # y = g.A4_HEIGHT - g.A4_CELL_SIZE * 6
+
+    # font_size = 48
+    # text = 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Pellentesque tempus.'
+    # font = ImageFont.truetype("assets/fonts/arial/ARIAL.TTF", font_size)
+    # _, _, title_w, _ = font.getbbox(text)
+
+    # words = text.split(' ')
+    # lines = []
+    # line = ''
+    # for word in words:
+    #     _, _, word_w, _ = font.getbbox(word)
+    #     _, _, line_w, _ = font.getbbox(line)
+    #     if line_w + word_w < (overlay_width//2) - (g.A4_CELL_SIZE * 2):
+    #         line += f'{word} '
+    #     else:
+    #         lines.append(line.strip())
+    #         line = f'{word} '
+    # lines.append(line)
+
+    # for i, line in enumerate(lines):
+    #     draw.text((x, y + (font_size * i * 1.3)), line, '#ffffff', font=font)
     

@@ -200,22 +200,42 @@ magazine_vol = '2024_06'
 magazine_folderpath = f'{database_filepath}/{magazine_vol}'
 magazine_pages_foldernames = os.listdir(magazine_folderpath)
 
-def magazine_cover():
+def magazine_cover_front():
     magazine_cover_folderpath = f'{database_filepath}/{magazine_vol}/cover'
 
-    magazine_cover_filepath_out = f'export/{magazine_vol}/cover.jpg'
+    magazine_cover_filepath_out = f'export/{magazine_vol}/0000.jpg'
 
     img = Image.new('RGB', (g.A4_WIDTH, g.A4_HEIGHT), color='white')
     draw = ImageDraw.Draw(img)
 
-    mag.cover(img, draw)
+    mag.cover_front(img, draw)
 
     img.save(magazine_cover_filepath_out)
-    # img.show()
 
+    # img.show()
     # quit()
 
-# magazine_cover()
+magazine_cover_front()
+
+
+def magazine_cover_back():
+    magazine_cover_folderpath = f'{databae_filepath}/{magazine_vol}/cover'
+
+    magazine_cover_filepath_out = f'export/{magazine_vol}/9999.jpg'
+
+    img = Image.new('RGB', (g.A4_WIDTH, g.A4_HEIGHT), color='white')
+    draw = ImageDraw.Draw(img)
+
+    mag.cover_back(img, draw)
+
+    img.save(magazine_cover_filepath_out)
+
+#     img.show()
+#     quit()
+
+
+magazine_cover_back()
+
 
 page_i = 0
 for magazine_page_foldername in magazine_pages_foldernames:
@@ -330,13 +350,17 @@ for magazine_page_foldername in magazine_pages_foldernames:
     # mag.a4_draw_grid(draw)
 
     export_url = data['export_url']
-    img.save(export_url)
+    export_url = ''
+    if page_i < 10: export_url = f'000{page_i}'
+    elif page_i < 100: export_url = f'00{page_i}'
+    elif page_i < 1000: export_url = f'0{page_i}'
+    elif page_i < 10000: export_url = f'{page_i}'
+
+    img.save(f'export/2024_06/{export_url}.jpg')
+    # img.show()
+    # quit()
 
     
-
-    # img.show()
-
-    # quit()
 
 
 def merge_pdf():
