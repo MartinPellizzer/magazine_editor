@@ -14,7 +14,7 @@ page_x = g.WINDOW_WIDTH//2-g.PAGE_WIDTH//2
 page_y = g.WINDOW_HEIGHT//2-g.PAGE_HEIGHT//2
 
 
-database_filepath = 'C:/magazine_database'
+database_filepath = 'magazine_database'
 
 ####################################################################################################
 # FUNC
@@ -120,12 +120,14 @@ def ai_body_small(json_filepath, data):
             line = line.strip()
             if line.lower().startswith('paragrafo'):
                 if paragraph_curr != '':
-                    paragraphs.append(paragraph_curr)
-                    paragraph_curr = ''
+                    if paragraph_curr.endswith('.'):
+                        paragraphs.append(paragraph_curr)
+                        paragraph_curr = ''
             else:
                 paragraph_curr += line
         if paragraph_curr != '':
-            paragraphs.append(paragraph_curr)
+            if paragraph_curr.endswith('.'):
+                paragraphs.append(paragraph_curr)
 
         if len(paragraphs) == 5:
             print('*********************************************************')
@@ -219,7 +221,7 @@ magazine_cover_front()
 
 
 def magazine_cover_back():
-    magazine_cover_folderpath = f'{databae_filepath}/{magazine_vol}/cover'
+    magazine_cover_folderpath = f'{database_filepath}/{magazine_vol}/cover'
 
     magazine_cover_filepath_out = f'export/{magazine_vol}/9999.jpg'
 
