@@ -4,10 +4,10 @@ C_GRID = '#cdcdcd'
 C_GUIDE = '#ff00ff'
 
 
-with open('demo_article.txt', 'r', encoding='utf-8', errors='ignore') as f: 
+with open('assets/demo_article.txt', 'r', encoding='utf-8', errors='ignore') as f: 
     DEMO_TEXT = f.read().replace('\n', ' ')
 
-with open('placeholder_text.txt', 'r', encoding='utf-8', errors='ignore') as f: 
+with open('assets/placeholder_text.txt', 'r', encoding='utf-8', errors='ignore') as f: 
     PLACEHOLDER_TEXT = f.read().replace('\n', ' ')
 
 
