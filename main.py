@@ -105,38 +105,41 @@ def ai_body_sm(json_filepath, data):
     # if key in data: del data[key]
     if key not in data: data[key] = []
     if data[key] == []:
-        prompt = f'''
-            Scrivi in Italiano 5 paragrafi brevi dettagliati usando i dati provenienti dall'abstract del seguente studio scientifico: {study_abstract}.
-            Nel paragrafo 1, scrivi l'introduzione in 100 parole.
-            Nel paragrafo 2, scrivi i metodi in 100 parole.
-            Nel paragrafo 3, scrivi i risultati in 100 parole.
-            Nel paragrafo 4, scrivi le discussioni in 100 parole.
-            Nel paragrafo 5, scrivi le conclusioni in 100 parole.
-            Per i paragrafi usa i seguenti titoli: Paragrafo 1, Paragrafo 2, Paragrafo 3, Paragrafo 4, Paragrafo 5.
-        '''
-        reply = util_ai.gen_reply(prompt).strip()
-        lines = reply.split('\n')
-        paragraphs = []
-        paragraph_curr = ''
-        for line in lines:
-            line = line.strip()
-            if line.lower().startswith('paragrafo'):
-                if paragraph_curr != '':
-                    if paragraph_curr.endswith('.'):
-                        paragraphs.append(paragraph_curr)
-                        paragraph_curr = ''
-            else:
-                paragraph_curr += line
-        if paragraph_curr != '':
-            if paragraph_curr.endswith('.'):
-                paragraphs.append(paragraph_curr)
-        if len(paragraphs) == 5:
-            print('*********************************************************')
-            print(paragraphs)
-            print('*********************************************************')
-            data[key] = paragraphs
-            util.json_write(json_filepath, data)
-        time.sleep(g.SLEEP_TIME)
+        good_reply = False
+        while not good_reply:
+            prompt = f'''
+                Scrivi in Italiano 5 paragrafi brevi dettagliati usando i dati provenienti dall'abstract del seguente studio scientifico: {study_abstract}.
+                Nel paragrafo 1, scrivi l'introduzione in 100 parole.
+                Nel paragrafo 2, scrivi i metodi in 100 parole.
+                Nel paragrafo 3, scrivi i risultati in 100 parole.
+                Nel paragrafo 4, scrivi le discussioni in 100 parole.
+                Nel paragrafo 5, scrivi le conclusioni in 100 parole.
+                Per i paragrafi usa i seguenti titoli: Paragrafo 1, Paragrafo 2, Paragrafo 3, Paragrafo 4, Paragrafo 5.
+            '''
+            reply = util_ai.gen_reply(prompt).strip()
+            lines = reply.split('\n')
+            paragraphs = []
+            paragraph_curr = ''
+            for line in lines:
+                line = line.strip()
+                if line.lower().startswith('paragrafo'):
+                    if paragraph_curr != '':
+                        if paragraph_curr.endswith('.'):
+                            paragraphs.append(paragraph_curr)
+                            paragraph_curr = ''
+                else:
+                    paragraph_curr += line
+            if paragraph_curr != '':
+                if paragraph_curr.endswith('.'):
+                    paragraphs.append(paragraph_curr)
+            if len(paragraphs) == 5:
+                print('*********************************************************')
+                print(paragraphs)
+                print('*********************************************************')
+                data[key] = paragraphs
+                util.json_write(json_filepath, data)
+                good_reply = True
+            time.sleep(g.SLEEP_TIME)
 
 
 def ai_body_lg(json_filepath, data):
@@ -150,14 +153,14 @@ def ai_body_lg(json_filepath, data):
             while not good_prompt:
                 prompt = f'''
                     Scrivi 1 paragrafo dettagliato usando i seguenti dati: {paragraph}
-                    Rispondi in meno di 150 parole.
+                    Rispondi in meno di 160 parole.
                     Rispondi in 1 paragrafo.
                     Non scrivere liste.
                 '''
                 reply = util_ai.gen_reply(prompt).strip()
                 words_num = len(reply.split(" "))
                 print(f'num words text = {words_num}')
-                if reply != '' and words_num < 200:
+                if reply != '' and words_num < 240:
                     print('*********************************************************')
                     print(reply)
                     print('*********************************************************')
@@ -225,6 +228,7 @@ def main():
     page_i = 0
     for magazine_page_foldername in magazine_pages_foldernames:
         if magazine_page_foldername == 'cover': continue
+        if magazine_page_foldername[0] == '_': continue
         page_i += 1
         
         # TODO: debug, to comment 
