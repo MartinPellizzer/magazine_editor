@@ -4,6 +4,7 @@ from PIL import Image, ImageDraw, ImageFont
 import g
 import util
 
+font_text = 'assets/fonts/Lato/Lato-Regular.ttf'
 
 def a4_draw_grid(draw):
     for i in range(g.GRID_COL_NUM+1):
@@ -112,10 +113,10 @@ def a4_draw_title(draw, grid_map, title):
     if 'd' in grid_map[row_i_1][col_i_1]: text_color = '#ffffff'
     
     title_font_size = 1
-    title_font = ImageFont.truetype("assets/fonts/arial/ARIAL.TTF", title_font_size)
+    title_font = ImageFont.truetype(font_text, title_font_size)
     for _ in range(999):
         # print(title_font_size)
-        title_font = ImageFont.truetype("assets/fonts/arial/ARIAL.TTF", title_font_size)
+        title_font = ImageFont.truetype(font_text, title_font_size)
         _, _, title_curr_w, title_curr_h = title_font.getbbox(line_longest)
         if title_curr_w > title_available_w or title_curr_h > title_available_h:
             break
@@ -180,9 +181,9 @@ def a4_draw_title_new(draw, grid_map, title):
         
         # CALC TITLE SIZE
         title_font_size = 1
-        title_font = ImageFont.truetype("assets/fonts/arial/ARIAL.TTF", title_font_size)
+        title_font = ImageFont.truetype(font_text, title_font_size)
         for _ in range(999):
-            title_font = ImageFont.truetype("assets/fonts/arial/ARIAL.TTF", title_font_size)
+            title_font = ImageFont.truetype(font_text, title_font_size)
             _, _, title_curr_w, title_curr_h = title_font.getbbox(line_longest)
             if title_curr_w > title_available_w or title_curr_h > title_available_h:
                 break
@@ -274,7 +275,7 @@ def a4_draw_title_constrained_y(draw, grid_map, title):
     # i = 0
     # for _ in range(999):
     #     title_font_size = i
-    #     title_font = ImageFont.truetype("assets/fonts/arial/ARIAL.TTF", title_font_size)
+    #     title_font = ImageFont.truetype(font_text, title_font_size)
 
     #     # get lines sizes
     #     lines_height_total = 0
@@ -317,7 +318,7 @@ def a4_draw_title_constrained_y(draw, grid_map, title):
 
     for i in range(999):
         title_font_size = i
-        title_font = ImageFont.truetype("assets/fonts/arial/ARIAL.TTF", title_font_size)
+        title_font = ImageFont.truetype(font_text, title_font_size)
 
         words = title.split()
         lines = []
@@ -342,7 +343,7 @@ def a4_draw_title_constrained_y(draw, grid_map, title):
 
     for i in range(999):
         title_font_size -= 1
-        title_font = ImageFont.truetype("assets/fonts/arial/ARIAL.TTF", title_font_size)
+        title_font = ImageFont.truetype(font_text, title_font_size)
 
         lines_height_total = 0
         for line_index, line in enumerate(lines):
@@ -356,10 +357,63 @@ def a4_draw_title_constrained_y(draw, grid_map, title):
 
 
 
+def a4_draw_title_constrained_y_new(draw, grid_map, title):
+    # GET TITLE BOX
+    col_i_1 = -1
+    row_i_1 = -1
+    col_i_2 = -1
+    row_i_2 = -1
+    for row_i in range(g.GRID_ROW_NUM):
+        for col_i in range(g.GRID_COL_NUM):
+            if 't' in grid_map[row_i][col_i]:
+                if col_i_1 == -1 and row_i_1 == -1:
+                    col_i_1 = col_i
+                    row_i_1 = row_i
+                else:
+                    col_i_2 = col_i
+                    row_i_2 = row_i
+
+    print(row_i_1, col_i_1, row_i_2, col_i_2)
+    
+    x_1 = g.A4_CELL_SIZE * col_i_1
+    y_1 = g.A4_CELL_SIZE * row_i_1
+    x_2 = g.A4_CELL_SIZE * (col_i_2 + 1)
+    y_2 = g.A4_CELL_SIZE * (row_i_2 + 1)
+
+    print(x_1, y_1, x_2, y_2)
+    
+    title_available_w = x_2 - x_1
+    title_available_h = y_2 - y_1
+
+    print(title_available_w, title_available_h)
+
+    title = 'From Mold to Gold: The Amazing Benefits of Ozone Treatment for Grain Preservation and Quality Control'
+    title_color = '#000000'
+    font_size = 128
+    title_font = ImageFont.truetype(font_text, font_size)
+    words = title.split(' ')
+    lines = []
+    line = ''
+    print(words)
+    for word in words:
+        _, _, line_w, line_h = title_font.getbbox(line)
+        _, _, word_w, word_h = title_font.getbbox(word)
+        if line_w + word_w < title_available_w:
+            line += f'{word} '
+        else:
+            lines.append(line.strip())
+            line = f'{word} '
+    lines.append(line.strip())
+    print(lines)
+    for i, line in enumerate(lines):
+        draw.text((x_1, y_1 + (font_size * i)), line, title_color, font=title_font)
+    
+
+
 def a4_draw_text_study(draw, text, grid_map, commit):
     text_total = text
     text_words_written = 0
-    body_font = ImageFont.truetype("assets/fonts/arial/ARIAL.TTF", g.BODY_FONT_SIZE)
+    body_font = ImageFont.truetype(font_text, g.BODY_FONT_SIZE)
 
     done_grid_map = []
     for row_i in range(g.GRID_ROW_NUM):
@@ -490,7 +544,7 @@ def cover_front(img, draw):
 
     title = 'OZONOGROUP'
     font_size = 300
-    font = ImageFont.truetype("assets/fonts/arial/ARIALBD.TTF", font_size)
+    font = ImageFont.truetype(font_text, font_size)
     draw.text((x, y), title, '#000000', font=font)
 
 
@@ -504,7 +558,7 @@ def cover_front(img, draw):
 
     title = 'Ozono vs. rifiuti organici delle raffinerie'
     font_size = 96
-    font = ImageFont.truetype("assets/fonts/arial/ARIALBD.TTF", font_size)
+    font = ImageFont.truetype(font_text, font_size)
     _, _, title_w, _ = font.getbbox(title)
 
     draw.text((g.A4_WIDTH//2 - title_w//2, y), title, '#ffffff', font=font)
@@ -518,7 +572,7 @@ def cover_front(img, draw):
 
     font_size = 48
     text = 'Può l\'ozono risolvere l\'enorme problema della produzione di inquinamento organico da parte delle raffinerie? Nuovi studi fanno luce sulla questione.'
-    font = ImageFont.truetype("assets/fonts/arial/ARIAL.TTF", font_size)
+    font = ImageFont.truetype(font_text, font_size)
     _, _, title_w, _ = font.getbbox(text)
 
     words = text.split(' ')
@@ -563,7 +617,7 @@ def cover_front(img, draw):
 
     font_size = 64
     text = 'Addio Norovirus'
-    font = ImageFont.truetype("assets/fonts/arial/ARIALBD.TTF", font_size)
+    font = ImageFont.truetype(font_text, font_size)
     _, _, title_w, _ = font.getbbox(text)
 
     words = text.split(' ')
@@ -589,7 +643,7 @@ def cover_front(img, draw):
 
     font_size = 48
     text = 'Possono le microbolle eliminare i Norovirus anche se con poco ozono?'
-    font = ImageFont.truetype("assets/fonts/arial/ARIAL.TTF", font_size)
+    font = ImageFont.truetype(font_text, font_size)
     _, _, title_w, _ = font.getbbox(text)
 
     words = text.split(' ')
@@ -617,7 +671,7 @@ def cover_front(img, draw):
 
     font_size = 64
     text = 'Mangimi Sani'
-    font = ImageFont.truetype("assets/fonts/arial/ARIALBD.TTF", font_size)
+    font = ImageFont.truetype(font_text, font_size)
     _, _, title_w, _ = font.getbbox(text)
 
     words = text.split(' ')
@@ -642,7 +696,7 @@ def cover_front(img, draw):
 
     font_size = 48
     text = 'UVC+O3... Combinazione efficace per eliminare le microtossine nei mangimi?'
-    font = ImageFont.truetype("assets/fonts/arial/ARIAL.TTF", font_size)
+    font = ImageFont.truetype(font_text, font_size)
     _, _, title_w, _ = font.getbbox(text)
 
     words = text.split(' ')
@@ -696,7 +750,7 @@ def cover_back(img, draw):
 
     title = 'OZONOGROUP SRL'
     font_size = 96
-    font = ImageFont.truetype("assets/fonts/arial/ARIALBD.TTF", font_size)
+    font = ImageFont.truetype(font_text, font_size)
     _, _, title_w, _ = font.getbbox(title)
 
     draw.text((g.A4_WIDTH//2 - title_w//2, y), title, '#000000', font=font)
@@ -706,7 +760,7 @@ def cover_back(img, draw):
     y = g.A4_CELL_SIZE * cell_y
     title = 'Telefono: +39 0423 952833'
     font_size = 48
-    font = ImageFont.truetype("assets/fonts/arial/ARIAL.TTF", font_size)
+    font = ImageFont.truetype(font_text, font_size)
     _, _, title_w, _ = font.getbbox(title)
     draw.text((g.A4_WIDTH//2 - title_w//2, y), title, '#000000', font=font)
     
@@ -715,7 +769,7 @@ def cover_back(img, draw):
     y = g.A4_CELL_SIZE * cell_y
     title = 'Email: info@ozonogroup.it'
     font_size = 48
-    font = ImageFont.truetype("assets/fonts/arial/ARIAL.TTF", font_size)
+    font = ImageFont.truetype(font_text, font_size)
     _, _, title_w, _ = font.getbbox(title)
     draw.text((g.A4_WIDTH//2 - title_w//2, y), title, '#000000', font=font)
     
@@ -724,7 +778,7 @@ def cover_back(img, draw):
     y = g.A4_CELL_SIZE * cell_y
     title = 'Sito Web: www.ozonogroup.it'
     font_size = 48
-    font = ImageFont.truetype("assets/fonts/arial/ARIAL.TTF", font_size)
+    font = ImageFont.truetype(font_text, font_size)
     _, _, title_w, _ = font.getbbox(title)
     draw.text((g.A4_WIDTH//2 - title_w//2, y), title, '#000000', font=font)
     
@@ -739,7 +793,7 @@ def cover_back(img, draw):
 
     # font_size = 48
     # text = 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Pellentesque tempus, orci ultrices fermentum posuere, nulla nibh gravida ligula, vel fringilla arcu ex eu neque.'
-    # font = ImageFont.truetype("assets/fonts/arial/ARIAL.TTF", font_size)
+    # font = ImageFont.truetype(font_text, font_size)
     # _, _, title_w, _ = font.getbbox(text)
 
     # words = text.split(' ')

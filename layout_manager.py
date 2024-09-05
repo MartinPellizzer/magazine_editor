@@ -188,7 +188,7 @@ def a4_template_preview():
 
 
 def a4_template_save():
-    templates_folderpath = f'templates/{month_folder}'
+    templates_folderpath = f'templates'
     templates_filenames = os.listdir(templates_folderpath)
     last_template_id = 0
     for template_filename in templates_filenames:
@@ -202,7 +202,7 @@ def a4_template_save():
     elif last_template_id < 10000: last_template_id_str = f'{last_template_id}'
 
     # save csv
-    with open(f'templates/{month_folder}/{last_template_id_str}.csv', 'w', newline='') as f:
+    with open(f'templates/{last_template_id_str}.csv', 'w', newline='') as f:
         write = csv.writer(f)
         write.writerows(grid_map)
 
@@ -216,7 +216,7 @@ def a4_template_save():
     mag.a4_draw_dark(draw, grid_map)
     mag.a4_draw_title(draw, grid_map, title='Nature\'s\nWonderland')
     a4_draw_text(draw)
-    export_filepath = f'templates/{month_folder}/{last_template_id_str}.jpg'
+    export_filepath = f'templates/{last_template_id_str}.jpg'
     img.save(export_filepath)
     
 
