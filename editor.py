@@ -8,6 +8,7 @@ import util
 A4_WIDTH = 2480 * 2
 A4_HEIGHT = 3508
 
+
 WINDOW_WIDTH = 1920
 WINDOW_HEIGHT = 1080
 
@@ -20,21 +21,19 @@ canvas_y = WINDOW_HEIGHT//2 - CANVAS_HEIGHT//2
 cols_num = 64
 rows_num = int(cols_num*1.41/2)
 
+a4_col_w = A4_WIDTH / cols_num
+a4_row_h = A4_HEIGHT / rows_num
+print(a4_col_w)
+print(a4_row_h)
+
 col_width = CANVAS_WIDTH / cols_num
 row_height = CANVAS_HEIGHT / rows_num
-
-print(col_width)
-print(row_height)
-
 cols_gap = col_width//4
 
 p1_margin_left = col_width*3
 p1_margin_right = col_width*5
 
 print_area_w = CANVAS_WIDTH//2 - p1_margin_left - p1_margin_right
-print(CANVAS_WIDTH)
-print(print_area_w)
-# quit()
 
 grid_map = []
 for row_i in range(rows_num):
@@ -42,6 +41,56 @@ for row_i in range(rows_num):
     for col_i in range(cols_num):
         row_curr.append('')
     grid_map.append(row_curr)
+
+
+######################################################################################################
+# MAGAZINE 
+######################################################################################################
+def magazine_img(img, draw):
+    start_col_i = -1
+    start_row_i = -1
+    end_col_i = -1
+    end_row_i = -1
+    for row_i in range(rows_num):
+        for col_i in range(cols_num):
+            if 'i_0' in tmp_grid_map[row_i][col_i]:
+                if start_col_i == -1: start_col_i = col_i
+                if start_row_i == -1: start_row_i = row_i
+                end_col_i = col_i
+                end_row_i = row_i
+    end_row_i += 1
+    end_col_i += 1
+    print(start_col_i, start_row_i)
+    print(end_col_i, end_row_i)
+    print()
+    if start_col_i != -1 and start_row_i != -1 and end_col_i != -1 and end_col_i != -1: 
+        x = int(start_col_i*a4_col_w)
+        y = int(start_row_i*a4_row_h)
+        w = int(end_col_i*a4_col_w) - x
+        h = int(end_row_i*a4_row_h) - y
+        print(x, y, w, h)
+        foreground = Image.open('image-test.png')
+        util.img_resize_save(
+            'image-test.png', 'image-test-resized.jpg', 
+            w=w, h=h, 
+            quality=100,
+        )
+        foreground = Image.open('image-test-resized.jpg')
+        img.paste(foreground, (x, y))
+    return img
+        
+
+def magazine_gen():
+    img = Image.new('RGB', (A4_WIDTH, A4_HEIGHT), color='white')
+    draw = ImageDraw.Draw(img)
+    img = magazine_img(img, draw)
+    img.show()
+
+
+
+######################################################################################################
+# PYGAME 
+######################################################################################################
 
 body_font_size = 14
 
@@ -87,6 +136,8 @@ while True:
                 elif flag_brush_type == 'p': flag_brush_type = 'i'
             if event.key == pygame.K_p:
                 flag_preview = not flag_preview
+            if event.key == pygame.K_o:
+                 magazine_gen()
                 
         if event.type == pygame.MOUSEBUTTONDOWN:
             flag_drag = True
@@ -129,8 +180,8 @@ while True:
     pygame.draw.rect(screen, '#ffffff', (canvas_x, canvas_y, CANVAS_WIDTH, CANVAS_HEIGHT))
 
     ## image
-    if flag_preview:
-        screen.blit(image_test, (canvas_x + CANVAS_WIDTH//2 - col_width*3, canvas_y))
+    # if flag_preview:
+    #    screen.blit(image_test, (canvas_x + CANVAS_WIDTH//2 - col_width*3, canvas_y))
 
     ## text
     with open('body-test.txt') as f: content = f.read()
