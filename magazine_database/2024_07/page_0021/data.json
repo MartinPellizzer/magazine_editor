@@ -1,0 +1,12 @@
+{
+    "study_url": "https://essopenarchive.org/doi/full/10.22541/essoar.171804891.19520982",
+    "study_title": "Aura Ozone Monitoring Instrument (OMI) Collection 4 Formaldehyde Product",
+    "study_abstract": "This study presents the Ozone Monitoring Instrument (OMI) Collection 4 formaldehyde (HCHO) retrieval developed with the Smithsonian Astrophysical Observatory’s (SAO) Making Earth System Data Records for Use in Research Environments (MEaSUREs) algorithm. The retrieval algorithm updates and makes improvements to the NASA operational OMI HCHO (OMI Collection 3 HCHO) algorithm, and has been transitioned to use OMI Collection 4 Level-1B radiances. This paper describes the updated retrieval algorithm and compares Collection 3 and Collection 4 data products. The OMI Collection 4 HCHO exhibits remarkably improved stability over time in comparison to the OMI Collection 3 HCHO product, with better precision and the elimination of artificial trends present in the Collection 3 during the later years of the mission. We validate the OMI Collection 4 HCHO data product using Fourier-Transform Infrared (FTIR) ground-based HCHO measurements. The climatological monthly averaged OMI Collection 4 HCHO vertical column densities (VCDs) agree well with the FTIR VCDs, with a correlation coefficient of 0.83, root-mean-square error (RMSE) of 2.98 × 1015 molecules cm-2, regression slope of 0.79, and intercept of 8.21 × 1014 molecules cm-2. Additionally, we compare the monthly averaged OMI Collection 4 HCHO VCDs to OMPS Suomi NPP, OMPS NOAA-20, and TROPOMI HCHO VCDs in overlapping years for twelve geographic regions. This comparison demonstrates high correlation coefficients of 0.98 (OMPS Suomi NPP), 0.97 (OMPS NOAA-20), and 0.90 (TROPOMI).",
+    "journal_name": "",
+    "title": "",
+    "title_sm": "",
+    "body": [],
+    "body_sm": [],
+    "body_lg": [],
+    "_": ""
+}

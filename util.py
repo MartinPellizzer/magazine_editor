@@ -1,6 +1,8 @@
 import requests
 import json
 
+from PIL import Image
+
 def img_resize(img, w, h):
     start_size = img.size
     end_size = (w, h)
@@ -26,6 +28,11 @@ def img_resize(img, w, h):
     img = img.crop(area)
 
     return img
+
+def img_resize_save(filepath_in, filepath_out, w, h, quality=100):
+    img = Image.open(filepath_in)
+    img = img_resize(img, w, h)
+    img.save(filepath_out, quality=quality)
 
 
 def json_write(filepath, data):

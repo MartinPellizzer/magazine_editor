@@ -1,0 +1,12 @@
+{
+    "study_url": "https://www.iscre28.org/abstracts/abstract_296_222_1.pdf",
+    "study_title": "Revealing Kinetics Parameters for Delignification of Oil Palm Empty Fruit Bunch through Ozonolysis Pre-treatment via Sparse Nonlinear Optimizer",
+    "study_abstract": "Ozonolysis pre-treatment emerges as a promising eco-friendly alternative due to its robust oxidative features, facilitating simultaneous delignification and oxidation [1]. This process has demonstrated significant improvements in lignin degradation [2] and glucose yield [3]. However, a comprehensive understanding of the underlying reaction mechanisms during pre-treatment remains limited. The proposed model for the ozonation of wheat and rye straw exhibited conflicting results compared to experimental data [4], prompting the introduction of the cuticle layer theory to enhance the model [5]. The kinetics of ozone consumption revealed a two-phase behavior, starting with a falling rate and transitioning to a constant rate [6]. While previous investigations, utilizing COMSOL Multiphysics software, studied the combined model of [4] and [5] on Empty Fruit Bunch (EFB) biomass, focusing on the impact of pressure drop and ozone velocity on the ozonolysis reaction, these studies were confined to the kinetic analysis within a packed-bed reactor system. Additionally, none of the studies provided a framework for estimating kinetic parameters. Therefore, this study aims to assess the performance of ozonolysis on EFB biomass within a semi-batch well-mixed reactor using COMSOL Multiphysics® software. This exploration is anticipated to contribute valuable insights into sugar recovery production from biomass technology.",
+    "journal_name": "",
+    "title": "",
+    "title_sm": "",
+    "body": [],
+    "body_sm": [],
+    "body_lg": [],
+    "_": ""
+}
