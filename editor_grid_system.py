@@ -1,3 +1,5 @@
+import os
+import json
 import random
 
 from PIL import Image, ImageDraw, ImageFont
@@ -7,10 +9,12 @@ import torch
 from diffusers import DiffusionPipeline, StableDiffusionXLPipeline
 from diffusers import DPMSolverMultistepScheduler
 
+from oliark import json_read, json_write
+from oliark_llm import llm_reply
+
 import util
 
 ## stable diffusion init
-'''
 checkpoint_filepath = '/home/ubuntu/vault/stable-diffusion/checkpoints/juggernautXL_juggXIByRundiffusion.safetensors'
 pipe = StableDiffusionXLPipeline.from_single_file(
     checkpoint_filepath, 
@@ -19,7 +23,6 @@ pipe = StableDiffusionXLPipeline.from_single_file(
     variant="fp16"
 ).to('cuda')
 pipe.scheduler = DPMSolverMultistepScheduler.from_config(pipe.scheduler.config)
-'''
 
 vault_folderpath = '/home/ubuntu/vault'
 
@@ -58,7 +61,7 @@ line_h = row_h / line_num
 font_size = line_h / line_spacing
 body_font = ImageFont.truetype(f'{vault_folderpath}/fonts/helvetica/Helvetica.ttf', font_size)
 
-a4_col_gap = line_h * 2
+a4_col_gap = line_h
 a4_row_gap = line_h * line_spacing
 
 map_matrix = []
@@ -68,11 +71,7 @@ for i in range(row_num):
         row.append('')
     map_matrix.append(row)
 
-def image_gen(prompt, image_filepath_out):
-    image = pipe(prompt=prompt, num_inference_steps=25).images[0]
-    image.save(image_filepath_out)
-
-def draw_page(page_num, body_text, place='left', image_regen=False, show_guides=False):
+def draw_page(page_num, title_text, body_text, place='left', image_regen=False, show_guides=False):
     if place == 'left':
         text_area_x1 = p1_ml
         text_area_y1 = p1_mt
@@ -126,7 +125,9 @@ def draw_page(page_num, body_text, place='left', image_regen=False, show_guides=
                 depth of field, bokeh,
                 high resolution, cinematic
             '''
-            image_gen(prompt, 'images/image-1.png')
+            image = pipe(prompt=prompt, num_inference_steps=25).images[0]
+            image.save('images/image-1.png')
+
 
         if image_index == 0:
             cell_x1_index = random.randint(0, col_num-1)
@@ -173,11 +174,11 @@ def draw_page(page_num, body_text, place='left', image_regen=False, show_guides=
         h = int(row_h * (cell_y2_index - cell_y1_index + 1) - line_h - (line_h - line_h/line_spacing))
         print(x1, y1, w, h)
         util.img_resize_save(
-            'images/image-1.png', 'images/image-1-resized.jpg', 
+            f'images/{page_num}-image-{image_index}.png', f'images/{page_num}-image-{image_index}-resized.jpg', 
             w=w, h=h, 
             quality=100,
         )
-        foreground = Image.open('images/image-1-resized.jpg')
+        foreground = Image.open(f'images/{page_num}-image-{image_index}-resized.jpg')
         img.paste(foreground, (x1, y1))
         print()
 
@@ -190,36 +191,37 @@ def draw_page(page_num, body_text, place='left', image_regen=False, show_guides=
                     blocks.append([i, j])
 
     ## title
-    '''
-    title_text = 'Come l\'ozono elimina l\'aspergillus nel formaggio montasio'
-    a4_title_font_size = line_h*2
-    a4_title_font = ImageFont.truetype(f'{vault_folderpath}/fonts/helvetica/Helvetica-Bold.ttf', a4_title_font_size)
+    # title_text = 'Come l\'ozono elimina l\'aspergillus nel formaggio montasio'
+    title_font_size = font_size*2
+    title_font = ImageFont.truetype(f'{vault_folderpath}/fonts/helvetica/Helvetica-Bold.ttf', title_font_size)
 
     title_lines = []
-    line_curr = ''
+    line = ''
     for word in title_text.split(' '):
-        _, _, line_curr_w, _ = a4_title_font.getbbox(line_curr)
-        _, _, word_w, _ = a4_title_font.getbbox(word)
-        if line_curr_w + word_w < col_w - a4_col_gap:
-            line_curr += f'{word} '
+        _, _, line_w, _ = title_font.getbbox(line)
+        _, _, word_w, _ = title_font.getbbox(word)
+        if line_w + word_w < col_w - line_h:
+            line += f'{word} '
         else:
-            title_lines.append(line_curr.strip())
-            line_curr = f'{word} '
-    title_lines.append(line_curr.strip())
+            title_lines.append(line.strip())
+            line = f'{word} '
+    title_lines.append(line.strip())
 
     if len(blocks) != 0:
         block_index = 0
         block_curr_x, block_curr_y = blocks[block_index]
         i = 0
+        x1 = text_area_x1 + col_w*block_curr_x
+        y1 = text_area_y1 + row_h*block_curr_y
         for line in title_lines:
-            x1 = text_area_x1 + col_w*block_curr_x
-            y1 = text_area_y1 + row_h*block_curr_y
-            y_line = y1 + (a4_title_font_size*i*line_spacing)
-            draw.text((x1, y_line), line, '#000000', font=a4_title_font)
+            y_line = y1 + (title_font_size*i*line_spacing)
+            draw.text((x1, y_line), line, '#000000', font=title_font)
             i += 1
-    '''
+    paragraph_offset_y = title_font_size*i*line_spacing + (font_size*line_spacing)
+    paragraph_lines_done = len(title_lines)*2  + 1
     
     ## body
+    body_text = body_text.strip().replace('\n', ' ').replace('  ', ' ')
     paragraphs = body_text.strip().split('\n')
     lines = []
     for paragraph in paragraphs:
@@ -244,9 +246,10 @@ def draw_page(page_num, body_text, place='left', image_regen=False, show_guides=
         for i, line in enumerate(lines):
             line_x = block_x
             line_y = block_y + font_size*line_i*line_spacing
+            line_y += paragraph_offset_y
             next_line_y = block_y + font_size*(line_i+1)*line_spacing
             ## change block
-            if line_i >= line_num: 
+            if line_i >= line_num - paragraph_lines_done: 
                 ## if no more blocks available to fit content -> cutoff
                 if block_index+1 >= len(blocks): break
                 line_i = 0
@@ -256,8 +259,10 @@ def draw_page(page_num, body_text, place='left', image_regen=False, show_guides=
                 block_y = text_area_y1 + row_h*block_curr_y
                 line_x = block_x
                 line_y = block_y + font_size*line_i*line_spacing
+                paragraph_offset_y = 0
+                paragraph_lines_done = 0
             else:
-                if line_i + 1 == line_num:
+                if line_i + 1 == line_num - paragraph_lines_done:
                     ## if no more blocks available to fit content -> cutoff
                     if block_index+1 >= len(blocks): break
                     if blocks[block_index+1][1] - blocks[block_index][1] != 1:
@@ -268,6 +273,8 @@ def draw_page(page_num, body_text, place='left', image_regen=False, show_guides=
                         block_y = text_area_y1 + row_h*block_curr_y
                         line_x = block_x
                         line_y = block_y + font_size*line_i*line_spacing
+                        paragraph_offset_y = 0
+                        paragraph_lines_done = 0
 
             if i < len(lines) - 1 and lines[i+1] == '':
                 ## last line of paragraph
@@ -308,6 +315,7 @@ def draw_page(page_num, body_text, place='left', image_regen=False, show_guides=
     # img.show()
     # quit()
 
+
 def draw_page_full_image(image_i, place='left', image_regen=False):
     if place == 'left':
         text_area_x1 = p1_ml
@@ -332,7 +340,8 @@ def draw_page_full_image(image_i, place='left', image_regen=False):
             depth of field, bokeh,
             high resolution, cinematic
         '''
-        image_gen(prompt, 'images/image-0.png')
+        image = pipe(prompt=prompt, num_inference_steps=25).images[0]
+        image.save('images/image-0.png')
 
     img = Image.new('RGB', (a4_w, a4_h), color='white')
     draw = ImageDraw.Draw(img)
@@ -363,7 +372,146 @@ def draw_page_double(image_i_1, image_i_2):
     img.paste(foreground_2, (a4_w, 0))
     img.show()
 
-with open('body-test.txt') as f: body_text = f.read()
+
+##############################################################
+# get study text
+##############################################################
+
+news_num = 0
+study_num = 0
+studies_filepaths = []
+news_folderpath = f'{vault_folderpath}/ozonogroup/news/done'
+for news_filename in os.listdir(news_folderpath):
+    news_filepath = f'{news_folderpath}/{news_filename}'
+    news_dict = json_read(news_filepath)
+    news_year = int(news_dict['year'])
+    news_month = int(news_dict['month'])
+    if news_year == 2024 and news_month == 8:
+        news_num += 1
+        study_filepath = f'{vault_folderpath}/ozonogroup/studies/pubmed/ozone/json/{news_filename}'
+        if os.path.exists(study_filepath):
+            studies_filepaths.append(study_filepath)
+            study_num += 1
+
+for study_filepath in studies_filepaths:
+    print(study_filepath)
+print(news_num)
+print(study_num)
+print(news_num - study_num)
+
+page_i = 0
+for study_filepath in studies_filepaths[:2]:
+    study_filename = study_filepath.split('/')[-1]
+    study = json_read(study_filepath)
+    article = study['PubmedArticle'][0]['MedlineCitation']['Article']
+    title_text = article['ArticleTitle']
+    abstract_text = article['Abstract']['AbstractText']
+    abstract_text = ' '.join(abstract_text)
+
+    if not os.path.exists(f'jsons/{study_filename}'):
+        with open(f'jsons/{study_filename}', 'w', encoding='utf-8') as f:
+            f.write('{}')
+    data = json_read(f'jsons/{study_filename}')
+
+    key = 'title'
+    if key not in data:
+        for i in range(99):
+            prompt = f'''
+                Write a title in less than 7 words for the following scientific STUDY in a easy to understandable way.
+                Reply with the following JSON format:
+                {{
+                    "title": "<write title here>"
+                }}
+                Write only the json, don't add additional content.
+                Don't include tags, only plain text.
+                Include the word "ozone" in the title if relevant.
+                STUDY: {title_text} \n{abstract_text}
+            '''
+            reply = llm_reply(prompt)
+            try: reply_dict = json.loads(reply)
+            except: continue
+            break
+        title_text = reply_dict['title']
+        data[key] = title_text
+        json_write(f'jsons/{study_filename}', data)
+
+    key = 'body'
+    if key not in data:
+        for i in range(99):
+            prompt = f'''
+                Write a 400 words article to explain the following scientific STUDY in a easy to understandable way.
+                The article must be 4 paragraphs.
+                In paragraph 1, write an introduction to the study, explaining why the subject of the matter is important.
+                In paragraph 2, write the methods used.
+                In paragraph 3, write the results achieved.
+                In paragraph 4, write the conclusion.
+                Reply with the following JSON format:
+                {{
+                    "introduction": "<write introduction here>",
+                    "methods": "<write methods here>",
+                    "results": "<write results here>",
+                    "conclusion": "<write conclusion here>"
+                }}
+                Don't add titles and subtitles, write only the paragraphs.
+                Don't include tags, only plain text.
+                STUDY: {abstract_text}
+            '''
+            reply = llm_reply(prompt)
+            try: reply_dict = json.loads(reply)
+            except: continue
+            break
+        introduction = reply_dict['introduction']
+        methods = reply_dict['methods']
+        results = reply_dict['results']
+        conclusion = reply_dict['conclusion']
+        body_text = f'{introduction} {methods} {results} {conclusion}'
+        data[key] = body_text
+        json_write(f'jsons/{study_filename}', data)
+
+    key = 'images_prompts'
+    if key not in data:
+        for i in range(99):
+            prompt = f'''
+                Write 4 prompts to generate 4 unique image with AI (stable diffusion) that would be a good fit for the following scientific STUDY.
+                Reply with the following JSON format:
+                {{
+                    "prompt1": "<write prompt 1 to generate the image 1 here>",
+                    "prompt2": "<write prompt 2 to generate the image 2 here>",
+                    "prompt3": "<write prompt 3 to generate the image 3 here>",
+                    "prompt4": "<write prompt 4 to generate the image 4 here>",
+                }}
+                Reply only with the json, don't add additional content.
+                Don't include tags, only plain text.
+                STUDY: {abstract_text}
+            '''
+            reply = llm_reply(prompt)
+            try: reply_dict = json.loads(reply)
+            except: continue
+            break
+        prompt1 = reply_dict['prompt1']
+        prompt2 = reply_dict['prompt2']
+        prompt3 = reply_dict['prompt3']
+        prompt4 = reply_dict['prompt4']
+        images_prompts = [prompt1, prompt2, prompt3, prompt4]
+        data[key] = images_prompts
+        json_write(f'jsons/{study_filename}', data)
+
+    images_prompts = data[key]
+    for image_i, image_prompt in enumerate(images_prompts):
+        if not os.path.exists(f'images/{page_i}-image-{image_i}.png'):
+            image = pipe(prompt=image_prompt, num_inference_steps=25).images[0]
+            image.save(f'images/{page_i}-image-{image_i}.png')
+
+    title_text = data['title']
+    body_text = data['body']
+    if page_i % 2 == 0: side = 'left'
+    else: side = 'right'
+    draw_page(f'{page_i}', title_text, body_text, 'left', image_regen=False, show_guides=False)
+    page_i += 1
+
+quit()
+
+# with open('body-test.txt') as f: body_text = f.read()
 
 # body_text = lorem.words(1200)
 # body_text = body_text.strip().replace('\n', ' ').replace('  ', ' ')
