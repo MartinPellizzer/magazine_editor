@@ -14,16 +14,6 @@ from oliark_llm import llm_reply
 
 import util
 
-## stable diffusion init
-checkpoint_filepath = '/home/ubuntu/vault/stable-diffusion/checkpoints/juggernautXL_juggXIByRundiffusion.safetensors'
-pipe = StableDiffusionXLPipeline.from_single_file(
-    checkpoint_filepath, 
-    torch_dtype=torch.float16, 
-    use_safetensors=True, 
-    variant="fp16"
-).to('cuda')
-pipe.scheduler = DPMSolverMultistepScheduler.from_config(pipe.scheduler.config)
-
 vault_folderpath = '/home/ubuntu/vault'
 
 # body_text = lorem.words(1200)
@@ -71,7 +61,7 @@ for i in range(row_num):
         row.append('')
     map_matrix.append(row)
 
-def draw_page(page_num, title_text, body_text, place='left', image_regen=False, show_guides=False):
+def draw_page(page_i, title_text, body_text, images, place='left', show_guides=False):
     if place == 'left':
         text_area_x1 = p1_ml
         text_area_y1 = p1_mt
@@ -117,18 +107,6 @@ def draw_page(page_num, title_text, body_text, place='left', image_regen=False, 
     total_cells = 0
     image_index = 0
     for image_i in range(99):
-        if image_regen:
-            prompt = f'''
-                milk,
-                food photography,
-                natural light, 
-                depth of field, bokeh,
-                high resolution, cinematic
-            '''
-            image = pipe(prompt=prompt, num_inference_steps=25).images[0]
-            image.save('images/image-1.png')
-
-
         if image_index == 0:
             cell_x1_index = random.randint(0, col_num-1)
             cell_y1_index = random.randint(0, row_num-1)
@@ -163,7 +141,6 @@ def draw_page(page_num, title_text, body_text, place='left', image_regen=False, 
                         map_matrix[i][j] = f'i_{image_index}'
         else:
             map_matrix[cell_y1_index][cell_x1_index] = f'i_{image_index}'
-        image_index += 1
         for row in map_matrix:
             print(row)
         
@@ -173,12 +150,14 @@ def draw_page(page_num, title_text, body_text, place='left', image_regen=False, 
         w = int(col_w * (cell_x2_index - cell_x1_index + 1) - line_h)
         h = int(row_h * (cell_y2_index - cell_y1_index + 1) - line_h - (line_h - line_h/line_spacing))
         print(x1, y1, w, h)
+        print(images)
+        print(image_index)
         util.img_resize_save(
-            f'images/{page_num}-image-{image_index}.png', f'images/{page_num}-image-{image_index}-resized.jpg', 
+            f'images/{images[image_index]}.png', f'images/{images[image_index]}-resized.jpg', 
             w=w, h=h, 
             quality=100,
         )
-        foreground = Image.open(f'images/{page_num}-image-{image_index}-resized.jpg')
+        foreground = Image.open(f'images/{images[image_index]}-resized.jpg')
         img.paste(foreground, (x1, y1))
         print()
 
@@ -189,6 +168,7 @@ def draw_page(page_num, title_text, body_text, place='left', image_regen=False, 
                 # print(f'col: {i}, row: {j} - {map_matrix[j][i]}')
                 if map_matrix[j][i] == '':
                     blocks.append([i, j])
+        image_index += 1
 
     ## title
     # title_text = 'Come l\'ozono elimina l\'aspergillus nel formaggio montasio'
@@ -306,17 +286,17 @@ def draw_page(page_num, title_text, body_text, place='left', image_regen=False, 
     avg_len = words_sum / len(lines)
     print(avg_len)
 
-    line = 'page 1'
+    line = str(page_i)
     x1 = text_area_x1
     y1 = text_area_y2 + (line_h*line_spacing*8)
     draw.text((x1, y1), line, '#000000', font=body_font)
 
-    img.save(f'exports-test/{page_num}.jpg')
+    img.save(f'exports-test/{page_i}.jpg')
     # img.show()
     # quit()
 
 
-def draw_page_full_image(image_i, place='left', image_regen=False):
+def draw_page_full_image(page_i, images, place='left'):
     if place == 'left':
         text_area_x1 = p1_ml
         text_area_y1 = p1_mt
@@ -332,34 +312,23 @@ def draw_page_full_image(image_i, place='left', image_regen=False):
         text_area_w = text_area_x2 - text_area_x1
         text_area_h = text_area_y2 - text_area_y1
 
-    if image_regen:
-        prompt = f'''
-            cheese,
-            food photography,
-            natural light, 
-            depth of field, bokeh,
-            high resolution, cinematic
-        '''
-        image = pipe(prompt=prompt, num_inference_steps=25).images[0]
-        image.save('images/image-0.png')
-
     img = Image.new('RGB', (a4_w, a4_h), color='white')
     draw = ImageDraw.Draw(img)
     util.img_resize_save(
-        'images/image-0.png', 'images/image-0-resized.jpg', 
+        f'images/{images[0]}.png', f'images/{images[0]}-resized.jpg', 
         w=a4_w, h=a4_h, 
         quality=100,
     )
-    foreground = Image.open('images/image-0-resized.jpg')
+    foreground = Image.open(f'images/{images[0]}-resized.jpg')
     img.paste(foreground, (0, 0))
 
-    line = 'page 2'
+    line = str(page_i)
     _, _, line_w, _ = body_font.getbbox(line)
     x1 = text_area_x2 - line_w
     y1 = text_area_y2 + (line_h*line_spacing*8)
     draw.text((x1, y1), line, '#ffffff', font=body_font)
 
-    img.save(f'exports-test/{image_i}.jpg')
+    img.save(f'exports-test/{page_i}.jpg')
     # img.show()
 
 
@@ -386,12 +355,14 @@ for news_filename in os.listdir(news_folderpath):
     news_dict = json_read(news_filepath)
     news_year = int(news_dict['year'])
     news_month = int(news_dict['month'])
+    news_category = news_dict['category']
     if news_year == 2024 and news_month == 8:
-        news_num += 1
-        study_filepath = f'{vault_folderpath}/ozonogroup/studies/pubmed/ozone/json/{news_filename}'
-        if os.path.exists(study_filepath):
-            studies_filepaths.append(study_filepath)
-            study_num += 1
+        if news_category == 'sanificazione':
+            news_num += 1
+            study_filepath = f'{vault_folderpath}/ozonogroup/studies/pubmed/ozone/json/{news_filename}'
+            if os.path.exists(study_filepath):
+                studies_filepaths.append(study_filepath)
+                study_num += 1
 
 for study_filepath in studies_filepaths:
     print(study_filepath)
@@ -399,135 +370,148 @@ print(news_num)
 print(study_num)
 print(news_num - study_num)
 
-page_i = 0
-for study_filepath in studies_filepaths[:2]:
-    study_filename = study_filepath.split('/')[-1]
-    study = json_read(study_filepath)
-    article = study['PubmedArticle'][0]['MedlineCitation']['Article']
-    title_text = article['ArticleTitle']
-    abstract_text = article['Abstract']['AbstractText']
-    abstract_text = ' '.join(abstract_text)
+## gen images (stable diffustion)
+if 0:
+    ## stable diffusion init
+    checkpoint_filepath = '/home/ubuntu/vault/stable-diffusion/checkpoints/juggernautXL_juggXIByRundiffusion.safetensors'
+    pipe = StableDiffusionXLPipeline.from_single_file(
+        checkpoint_filepath, 
+        torch_dtype=torch.float16, 
+        use_safetensors=True, 
+        variant="fp16"
+    ).to('cuda')
+    pipe.scheduler = DPMSolverMultistepScheduler.from_config(pipe.scheduler.config)
 
-    if not os.path.exists(f'jsons/{study_filename}'):
-        with open(f'jsons/{study_filename}', 'w', encoding='utf-8') as f:
-            f.write('{}')
-    data = json_read(f'jsons/{study_filename}')
+    page_i = 0
+    for study_filepath in studies_filepaths[:]:
+        study_filename = study_filepath.split('/')[-1]
+        study = json_read(study_filepath)
+        article = study['PubmedArticle'][0]['MedlineCitation']['Article']
+        title_text = article['ArticleTitle']
+        abstract_text = article['Abstract']['AbstractText']
+        abstract_text = ' '.join(abstract_text)
 
-    key = 'title'
-    if key not in data:
-        for i in range(99):
-            prompt = f'''
-                Write a title in less than 7 words for the following scientific STUDY in a easy to understandable way.
-                Reply with the following JSON format:
-                {{
-                    "title": "<write title here>"
-                }}
-                Write only the json, don't add additional content.
-                Don't include tags, only plain text.
-                Include the word "ozone" in the title if relevant.
-                STUDY: {title_text} \n{abstract_text}
-            '''
-            reply = llm_reply(prompt)
-            try: reply_dict = json.loads(reply)
-            except: continue
-            break
-        title_text = reply_dict['title']
-        data[key] = title_text
-        json_write(f'jsons/{study_filename}', data)
+        with open('tags.txt') as f: tags_all = f.read()
+        prompt = f'''
+            Give me the 4 most relevant tags from the following list of TAGS related to the following ARTICLE.
+            Reply in the following JSON format:
+            {{
+                "tag1": "name tag 1",
+                "tag2": "name tag 2",
+                "tag3": "name tag 3",
+                "tag4": "name tag 4"
+            }}
+            Reply only with the json, don't add additional content.
+            Choose the tags only from the list of tags, don't invent them.
+            In case you can't find relevant tags from the list of tags, reply "NA" for the tags names.
+            TAGS: {tags_all}
+            ARTICLE: {abstract_text}
+        '''
+        reply = llm_reply(prompt)
+        reply_dict = json.loads(reply)
 
-    key = 'body'
-    if key not in data:
-        for i in range(99):
-            prompt = f'''
-                Write a 400 words article to explain the following scientific STUDY in a easy to understandable way.
-                The article must be 4 paragraphs.
-                In paragraph 1, write an introduction to the study, explaining why the subject of the matter is important.
-                In paragraph 2, write the methods used.
-                In paragraph 3, write the results achieved.
-                In paragraph 4, write the conclusion.
-                Reply with the following JSON format:
-                {{
-                    "introduction": "<write introduction here>",
-                    "methods": "<write methods here>",
-                    "results": "<write results here>",
-                    "conclusion": "<write conclusion here>"
-                }}
-                Don't add titles and subtitles, write only the paragraphs.
-                Don't include tags, only plain text.
-                STUDY: {abstract_text}
-            '''
-            reply = llm_reply(prompt)
-            try: reply_dict = json.loads(reply)
-            except: continue
-            break
-        introduction = reply_dict['introduction']
-        methods = reply_dict['methods']
-        results = reply_dict['results']
-        conclusion = reply_dict['conclusion']
-        body_text = f'{introduction} {methods} {results} {conclusion}'
-        data[key] = body_text
-        json_write(f'jsons/{study_filename}', data)
-
-    key = 'images_prompts'
-    if key not in data:
-        for i in range(99):
-            prompt = f'''
-                Write 4 prompts to generate 4 unique image with AI (stable diffusion) that would be a good fit for the following scientific STUDY.
-                Reply with the following JSON format:
-                {{
-                    "prompt1": "<write prompt 1 to generate the image 1 here>",
-                    "prompt2": "<write prompt 2 to generate the image 2 here>",
-                    "prompt3": "<write prompt 3 to generate the image 3 here>",
-                    "prompt4": "<write prompt 4 to generate the image 4 here>",
-                }}
-                Reply only with the json, don't add additional content.
-                Don't include tags, only plain text.
-                STUDY: {abstract_text}
-            '''
-            reply = llm_reply(prompt)
-            try: reply_dict = json.loads(reply)
-            except: continue
-            break
-        prompt1 = reply_dict['prompt1']
-        prompt2 = reply_dict['prompt2']
-        prompt3 = reply_dict['prompt3']
-        prompt4 = reply_dict['prompt4']
+        with open('tags-food.txt') as f: tags_support = f.read()
+        tags_support = tags_support.split('\n')
+        prompt1 = reply_dict['tag1'] + ', ' + ', '.join(tags_support)
+        prompt2 = reply_dict['tag2'] + ', ' + ', '.join(tags_support)
+        prompt3 = reply_dict['tag3'] + ', ' + ', '.join(tags_support)
+        prompt4 = reply_dict['tag4'] + ', ' + ', '.join(tags_support)
+        print(prompt1)
+        print(prompt2)
+        print(prompt3)
+        print(prompt4)
         images_prompts = [prompt1, prompt2, prompt3, prompt4]
-        data[key] = images_prompts
-        json_write(f'jsons/{study_filename}', data)
+        for image_i, image_prompt in enumerate(images_prompts):
+            if not os.path.exists(f'images/{page_i}-image-{image_i}.png'):
+                image = pipe(prompt=image_prompt, num_inference_steps=25).images[0]
+                image.save(f'images/{page_i}-image-{image_i}.png')
 
-    images_prompts = data[key]
-    for image_i, image_prompt in enumerate(images_prompts):
-        if not os.path.exists(f'images/{page_i}-image-{image_i}.png'):
-            image = pipe(prompt=image_prompt, num_inference_steps=25).images[0]
-            image.save(f'images/{page_i}-image-{image_i}.png')
+        page_i += 2
 
-    title_text = data['title']
-    body_text = data['body']
-    if page_i % 2 == 0: side = 'left'
-    else: side = 'right'
-    draw_page(f'{page_i}', title_text, body_text, 'left', image_regen=False, show_guides=False)
-    page_i += 1
+## gen text
+else:
+    page_i = 0
+    for study_filepath in studies_filepaths[:]:
+        study_filename = study_filepath.split('/')[-1]
+        study = json_read(study_filepath)
+        article = study['PubmedArticle'][0]['MedlineCitation']['Article']
+        title_text = article['ArticleTitle']
+        abstract_text = article['Abstract']['AbstractText']
+        abstract_text = ' '.join(abstract_text)
 
-quit()
+        if not os.path.exists(f'jsons/{study_filename}'):
+            with open(f'jsons/{study_filename}', 'w', encoding='utf-8') as f:
+                f.write('{}')
+        data = json_read(f'jsons/{study_filename}')
 
-# with open('body-test.txt') as f: body_text = f.read()
+        key = 'title'
+        if key not in data:
+            for i in range(99):
+                prompt = f'''
+                    Write a title in less than 7 words for the following scientific STUDY in a easy to understandable way.
+                    Reply with the following JSON format:
+                    {{
+                        "title": "<write title here>"
+                    }}
+                    Write only the json, don't add additional content.
+                    Don't include tags, only plain text.
+                    Include the word "ozone" in the title if relevant.
+                    STUDY: {title_text} \n{abstract_text}
+                '''
+                reply = llm_reply(prompt)
+                try: reply_dict = json.loads(reply)
+                except: continue
+                break
+            title_text = reply_dict['title']
+            data[key] = title_text
+            json_write(f'jsons/{study_filename}', data)
 
-# body_text = lorem.words(1200)
-# body_text = body_text.strip().replace('\n', ' ').replace('  ', ' ')
-for i in range(100):
-    draw_page(f'{i}', body_text, 'left', image_regen=False, show_guides=False)
-    # draw_page_full_image('2', 'right', image_regen=False)
-    # draw_page_double('1', '2')
-    # quit()
-quit()
+        key = 'body'
+        if key not in data:
+            for i in range(99):
+                prompt = f'''
+                    Write a 400 words article to explain the following scientific STUDY in a easy to understandable way.
+                    The article must be 4 paragraphs.
+                    In paragraph 1, write an introduction to the study, explaining why the subject of the matter is important.
+                    In paragraph 2, write the methods used.
+                    In paragraph 3, write the results achieved.
+                    In paragraph 4, write the conclusion.
+                    Reply with the following JSON format:
+                    {{
+                        "introduction": "<write introduction here>",
+                        "methods": "<write methods here>",
+                        "results": "<write results here>",
+                        "conclusion": "<write conclusion here>"
+                    }}
+                    Don't add titles and subtitles, write only the paragraphs.
+                    Don't include tags, only plain text.
+                    STUDY: {abstract_text}
+                '''
+                reply = llm_reply(prompt)
+                try: reply_dict = json.loads(reply)
+                except: continue
+                break
+            introduction = reply_dict['introduction']
+            methods = reply_dict['methods']
+            results = reply_dict['results']
+            conclusion = reply_dict['conclusion']
+            body_text = f'{introduction} {methods} {results} {conclusion}'
+            data[key] = body_text
+            json_write(f'jsons/{study_filename}', data)
 
-def magazine_gen(image_i):
-    draw_page(image_i, 'right')
-    draw_page_full_image(image_i)
-
-
-for image_i in range(100):
-    magazine_gen(image_i)
-    quit()
+        title_text = data['title']
+        body_text = data['body']
+        rand_side = random.choice([0, 1])
+        print('rand side', rand_side)
+        if rand_side == 0:
+            images = [f'{page_i}-image-1', f'{page_i}-image-2', f'{page_i}-image-3']
+            draw_page(f'{page_i}', title_text, body_text, images, 'left', show_guides=False)
+            images = [f'{page_i}-image-0']
+            draw_page_full_image(page_i+1, images, 'right')
+        else:
+            images = [f'{page_i}-image-0']
+            draw_page_full_image(page_i, images, 'left')
+            images = [f'{page_i}-image-1', f'{page_i}-image-2', f'{page_i}-image-3']
+            draw_page(f'{page_i+1}', title_text, body_text, images, 'right', show_guides=False)
+        page_i += 2
 
